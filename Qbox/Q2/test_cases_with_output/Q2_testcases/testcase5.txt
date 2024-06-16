@@ -1,0 +1,3 @@
+The quick brown fox jumps over the lazy dog. This is an example sentence. Another sentence follows.
+machine learning has revolutionized many fields. Deep learning is a subset of machine learning.
+Climate change is a pressing issue. It affects global weather patterns and sea levels.

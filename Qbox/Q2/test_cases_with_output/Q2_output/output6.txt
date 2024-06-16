@@ -1,0 +1,63 @@
+ In this paper,  we present a novel weakly supervised framework with Spatio Temporal Collaboration for instance Segmentation in videos,  namely STC-Seg.
+ Concretely, STC-Seg demonstrates four con tributions.
+ We believe that  STC-Seg can be a valuable addition to the community, as it  reflects the tip of an iceberg about the innovative opportunities  in the weakly supervised paradigm for instance segmentation in  videos.
+ Working pipeline of STC-Seg.
+ To establish the conjecture, our work essentially  delivers the following contributions:  • We develop a Spatio-Temporal Collaboration framework  for instance Segmentation (STC-Seg) in videos, which  leverages the complementary representations of depth  estimation and optical flow to produce high-quality  pseudo-labels for training the deep network.
+  • The flexibility of our STC-Seg enables weakly supervised  instance segmentation and tracking methods to have the  capacity to train fully supervised segmentation methods.
+ STC-SEG APPROACH  A.
+ Overall Framework  The overall framework of STC-Seg is shown in Fig.
+ Essentially, our STC-Seg consists of three core  components: 1) the spatio-temporal pseudo-label generation,  which offers a supervision signal for our training; 2) the  puzzle solver, which organizes the training of video instance  segmentation models; and 3) the tracking module, which  enables robust tracking capacity.
+ The overview of STC-Seg framework.
+Datasets  We evaluate STC-Seg on two benchmarks: KITTI  MOTS [10] andYT-VIS [11].
+ Pseudo-Label Generation Network Architecture  In the pseudo-label generation of STC-Seg, unsupervised  Monodepth2 [68] and Upflow [69] are adopted for the depth  estimation and optical flow respectively.
+  2) STC-Seg Training and Inference: The STC-Seg is  implemented using PyTorch.
+  2) STC-Seg Training and Inference: The STC-Seg is  implemented using PyTorch.
+STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101  AS BACKBONERESPECTIVELY.
+STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101  AS BACKBONERESPECTIVELY.
+ Main Results  1) Quantitative Results: On the KITTI MOTS benchmark,  we compare our STC-Seg against the state-of-the-art baselines.
+ Our STC-Seg with ResNet-50 significantly outperforms  all weakly supervised methods which use a stronger back bone (ResNet-101).
+ We further provide comparison  results of our STC-Seg with the state-of-the-art baselines  on YT-VIS in Table II.
+  3) Discussion: The aforementioned results demonstrate the  strong performance of STC-Seg in videos.
+ QualitativeresultsofourSTC-SegincomparisonwithTrackR-CNN[10]andMaskTrackR-CNN[11]onKITTIMOTSandYT-VISrespectively.
+ Examples ofweakpredictions fromSTC-Seg.
+AblationStudy  In this section, we investigate the effectiveness of each  component inSTC-Segbyconductingablationexperiments  onKITTIMOTS.
+ Extending Instance Segmentation to Videos  In this section, we evaluate the flexibility and generalization  of the proposed STC-Seg framework.
+ In particular, we lever age our STC-Seg framework (i.
+ We select three widely  recognized instance segmentation methods, YOLACT [45],  BlendMask [50] and HTC [44]), and integrate with our STC Seg framework.
+ This  observation is consistent among all three selected methods,  which demonstrates that our STC-Seg framework can flexibly  extend image instance segmentation methods to operate on  video tasks.
+  RESULTSOFUSINGGROUNDTRUTHSORNOTINSPATIO-TEMPORAL  SIGNALSGENERATIONWHENTRAININGOURSTC-SEGONKITTI  MOTS.
+ In this study, we propose a weakly  supervised learning method for instance segmentation in  videos with a spatio-temporal collaboration framework, titled  STC-Seg.
+ STC-Seg works in a plug-and-play manner and can  be nested in any segmentation network method.
+ Extensive  experimental results indicate that STC-Seg is competitive  with the concurrent methods and outperforms fully supervised  MaskTrack R-CNN and TrackR-CNN.
+ In this paper,  we present a novel weakly supervised framework with Spatio Temporal Collaboration for instance Segmentation in videos,  namely STC-Seg.
+ Concretely, STC-Seg demonstrates four con tributions.
+ We believe that  STC-Seg can be a valuable addition to the community, as it  reflects the tip of an iceberg about the innovative opportunities  in the weakly supervised paradigm for instance segmentation in  videos.
+ Working pipeline of STC-Seg.
+ To establish the conjecture, our work essentially  delivers the following contributions:  • We develop a Spatio-Temporal Collaboration framework  for instance Segmentation (STC-Seg) in videos, which  leverages the complementary representations of depth  estimation and optical flow to produce high-quality  pseudo-labels for training the deep network.
+  • The flexibility of our STC-Seg enables weakly supervised  instance segmentation and tracking methods to have the  capacity to train fully supervised segmentation methods.
+ STC-SEG APPROACH  A.
+ Overall Framework  The overall framework of STC-Seg is shown in Fig.
+ Essentially, our STC-Seg consists of three core  components: 1) the spatio-temporal pseudo-label generation,  which offers a supervision signal for our training; 2) the  puzzle solver, which organizes the training of video instance  segmentation models; and 3) the tracking module, which  enables robust tracking capacity.
+ The overview of STC-Seg framework.
+Datasets  We evaluate STC-Seg on two benchmarks: KITTI  MOTS [10] andYT-VIS [11].
+ Pseudo-Label Generation Network Architecture  In the pseudo-label generation of STC-Seg, unsupervised  Monodepth2 [68] and Upflow [69] are adopted for the depth  estimation and optical flow respectively.
+  2) STC-Seg Training and Inference: The STC-Seg is  implemented using PyTorch.
+  2) STC-Seg Training and Inference: The STC-Seg is  implemented using PyTorch.
+STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101  AS BACKBONERESPECTIVELY.
+STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101  AS BACKBONERESPECTIVELY.
+ Main Results  1) Quantitative Results: On the KITTI MOTS benchmark,  we compare our STC-Seg against the state-of-the-art baselines.
+ Our STC-Seg with ResNet-50 significantly outperforms  all weakly supervised methods which use a stronger back bone (ResNet-101).
+ We further provide comparison  results of our STC-Seg with the state-of-the-art baselines  on YT-VIS in Table II.
+  3) Discussion: The aforementioned results demonstrate the  strong performance of STC-Seg in videos.
+ QualitativeresultsofourSTC-SegincomparisonwithTrackR-CNN[10]andMaskTrackR-CNN[11]onKITTIMOTSandYT-VISrespectively.
+ Examples ofweakpredictions fromSTC-Seg.
+AblationStudy  In this section, we investigate the effectiveness of each  component inSTC-Segbyconductingablationexperiments  onKITTIMOTS.
+ Extending Instance Segmentation to Videos  In this section, we evaluate the flexibility and generalization  of the proposed STC-Seg framework.
+ In particular, we lever age our STC-Seg framework (i.
+ We select three widely  recognized instance segmentation methods, YOLACT [45],  BlendMask [50] and HTC [44]), and integrate with our STC Seg framework.
+ This  observation is consistent among all three selected methods,  which demonstrates that our STC-Seg framework can flexibly  extend image instance segmentation methods to operate on  video tasks.
+  RESULTSOFUSINGGROUNDTRUTHSORNOTINSPATIO-TEMPORAL  SIGNALSGENERATIONWHENTRAININGOURSTC-SEGONKITTI  MOTS.
+ In this study, we propose a weakly  supervised learning method for instance segmentation in  videos with a spatio-temporal collaboration framework, titled  STC-Seg.
+ STC-Seg works in a plug-and-play manner and can  be nested in any segmentation network method.
+ Extensive  experimental results indicate that STC-Seg is competitive  with the concurrent methods and outperforms fully supervised  MaskTrack R-CNN and TrackR-CNN.
+

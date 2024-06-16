@@ -1,0 +1,1398 @@
+ Multi-Level Training and Testing of CNN Models in
+ Diagnosing Multi-Center COVID-19 and Pneumonia
+ X-ray Images
+ MohamedTalaat 1, Xiuhua Si 2 and Jinxiang Xi 1,*
+ 1
+ 2
+ *
+ Department of Biomedical Engineering, University of Massachusetts, Lowell, MA 01854, USA;
+ mohamed_talaat@student.uml.edu
+ Department of Mechanical Engineering, California Baptist University, Riverside, CA 92504, USA;
+ asi@calbaptist.edu
+ Correspondence: jinxiang_xi@uml.edu; Tel.: +1-978-934-3259
+ Featured Application: Despite their reported high accuracy, a significant limitation of current
+ AI-assisted COVID-19 diagnostic models is that they are often trained on datasets sourced from
+ specific clinics or possessing a limited number of training images. This raises an important ques
+tion: Will these models maintain high accuracy when deployed in other clinics where images
+ might exhibit disparities? If accuracy does drop, to what extent can we expect this decline? Con
+versely, how much can accuracy be improved by augmenting the training dataset with new im
+ages? In this study, we evaluated the performances of four CNN models that were trained on in
+crementally augmented datasets and subsequently tested on images with decreasing similarities.
+ Through multi-level testing, we assessed the models’ capacities for verification, interpolation,
+ and extrapolation in the context of diagnosing COVID-19 and pneumonia using multi-center X
+ray images. Compared to conventional one-round training, multi-round training offers a more
+ comprehensive insight into a model’s learnability, robustness, and interpretability.
+ Citation: Talaat, M.; Si, X.; Xi, J.
+ Multi-Level Training and Testing of
+ CNNModelsinDiagnosing
+ Multi-Center COVID-19 and
+ Pneumonia X-ray Images. Appl. Sci.
+ 2023, 13, 10270. https://doi.org/
+ 10.3390/app131810270
+ Academic Editor: Josué Álvarez
+ Borrego
+ Received: 11 August 2023
+ Revised: 6 September 2023
+ Accepted: 12 September 2023
+ Published: 13 September 2023
+ Copyright: © 2023 by the authors.
+ Licensee MDPI, Basel, Switzerland.
+ This article is an open access article
+ distributed under the terms and
+ conditions of the Creative Commons
+ Attribution (CC BY) license (https://
+ creativecommons.org/licenses/by/
+ 4.0/).
+ Abstract: This study aimed to address three questions in AI-assisted COVID-19 diagnostic systems:
+ (1) How does a CNNmodeltrained on one dataset perform on test datasets from disparate medical
+ centers? (2) What accuracy gains can be achieved by enriching the training dataset with new images?
+ (3) How can learned features elucidate classification results, and how do they vary among different
+ models? To achieve these aims, four CNN models—AlexNet, ResNet-50, MobileNet, and VGG
+19—were trained in five rounds by incrementally adding new images to a baseline training set
+ comprising 11,538 chest X-ray images. In each round, the models were tested on four datasets with
+ decreasing levels of image similarity. Notably, all models showed performance drops when tested on
+ datasets containing outlier images or sourced from other clinics. In Round 1, 95.2~99.2% accuracy
+ was achieved for the Level 1 testing dataset (i.e., from the same clinic but set apart for testing only),
+ and 94.7~98.3% for Level 2 (i.e., from an external clinic but similar). However, model performance
+ drastically decreased for Level 3 (i.e., outlier images with rotation or deformation), with the mean
+ sensitivity plummeting from 99% to 36%. For the Level 4 testing dataset (i.e., from another clinic),
+ accuracy decreased from 97% to 86%, and sensitivity from 99% to 67%. In Rounds 2 and 3, adding
+ 25% and 50%ofthe outlier images to the training dataset improved the average Level-3 accuracy by
+ 15% and23%(i.e., from 56% to 71% to 83%). In Rounds 4 and 5, adding 25% and 50% of the external
+ images increased the average Level-4 accuracy from 81% to 92% and 95%, respectively. Among the
+ models, ResNet-50 demonstrated the most robust performance across the five-round training/testing
+ phases, while VGG-19 persistently underperformed. Heatmaps and intermediate activation features
+ showed visual correlations to COVID-19 and pneumonia X-ray manifestations but were insufficient
+ to explicitly explain the classification. However, heatmaps and activation features at different rounds
+ shed light on the progression of the models’ learning behavior.
+ Appl. Sci. 2023, 13, 10270. https://doi.org/10.3390/app131810270
+ https://www.mdpi.com/journal/applsci
+Appl. Sci. 2023, 13, 10270
+ 2 of 21
+ Keywords: convolutional neural network (CNN); X-ray; COVID-19; pneumonia; AI-assisted lung
+ diagnostic system; multi-round training
+ 1. Introduction
+ Over the past few years, there has been a surge in studies exploring deep learning
+ techniques to diagnose COVID-19 and pneumonia. Systematic reviews of AI-enabled
+ COVID-19detection can be foundin[1–3] in 2021, [4–10] in 2022, and [11–13] in 2023. While
+ all reviews delved into deep learning neural networks and medical image databases, there
+ were apparent shifts in focus, from the feasibility of deep learning to this aim and limited
+ databases in 2021, to model performance comparison and database survey in 2022, and to
+ model enhancement/development and real-world applications recently. Because COVID
+19 medical images were still limited in 2021, prior studies often focused on demonstrating
+ the feasibility of deep learning models in distinguishing COVID-19 cases from normal
+ subjects or patients with other respiratory diseases, such as pneumonia [14–16]. These
+ studies either used chest X-ray images or CT scans [17–22] and were designed as either
+ binary or multi-class classifications [23,24]. In general, the model classification accuracy
+ was higher using chest X-ray images (90%+) than using CT (~85%) and was higher (1–5%)
+ in binary than multi-class classifications [10,25,26]. To remedy data shortages, various
+ techniques of data augmentation were used, including scaling, rotation, shifting, and image
+ f
+ iltering such as grayscale and Gaussian blur [27–29].
+ With the increasing availability of COVID-19 X-rays and CT scans since 2021, research
+ has pivoted to comparing various machine learning models and developing new models
+ tailored for COVID-19 detection. For instance, Garg et al. [30] considered 20 CNN models
+ for COVID-19 detection, including EfficientNet-B5, DenseNet169, InceptionV3, ResNet-50,
+ and VGG16, using 4173 CT images, and demonstrated that EfficientNet-B5 and ResNet-50
+ were persistently superior in accuracy and sensitivity, followed by DenseNet, Efficient
+Net, and Xception, while VGG-19 remained the lowest across models. However, mixed
+ results were frequently reported by other studies. Chouat et al. [31] compared ResNet-50,
+ InceptionV3, VGG-19, and Xception using CT scans and X-ray images and reported that
+ VGG-19 performed best on CT scans (87% accuracy) and Xception performed best on X-ray
+ images (98% accuracy). In another study using CT images [32], ResNet-50 had the highest
+ accuracy (96.97%), followed by Xception (90.71%), Inception-v3 (89.38%), and VGG16
+ (87.12%). Considering that such variability was reflective of the inherent advantages and
+ setbacks of CNN models, hybrid or ensemble models leveraging multiple networks have
+ been explored. By combining Inception V3 with VGG16, Srinivas et al. [33] achieved a
+ 98% accuracy of COVID-19 prediction using 243 X-ray images, which outperformed In
+ception V3, VGG16, ResNet-50, DenseNet121, and MobileNet when tested individually.
+ Similarly, Wang et al. [34] integrated features extracted from Xception, MobileNetV2, and
+ NasNetMobile and made the classification via a confidence fusion method.
+ Anotable variance in prior studies was the reported classification accuracies, ranging
+ broadly from 78% to 100%, presumably due to the size or quality of the training/testing
+ datasets. For instance, in 2021, Karar et al. [35] reported 99.9% classification accuracy for
+ VGG-19 and ResNet-50. However, only 263 original X-ray images (including 56 normal,
+ 49 COVID-19, and 128 pneumonia) were used, which were increased to 3325 images for
+ each category through augmentation techniques like flipping, rotation, and shifting. In 2022,
+ using 4326 chest X-ray images, Kumar et al. [36] reported an accuracy of 100% for binary
+ classification (normal vs. COVID-19) and 98.82% for multi-class classification (normal,
+ COVID-19, pneumonia). On the other hand, 78% accuracy using VGG-19 and 4137 CT
+ images was reported by Garg et al. [30].
+ Despite exhibiting high accuracies in training and validation, CNN-based transfer
+ learning might underperform during the testing phase [37–41]. This could be due to
+ overfitting, which is a common issue in medical image classification with a limited number
+Appl. Sci. 2023, 13, 10270
+ 3 of 21
+ of discriminatory image features [7,13,42–44]. Prominent CNN models typically encompass
+ over ten layers, boasting 60+ million trained parameters, and are trained on expansive
+ datasets like ImageJ, which houses 1000 categories. In contrast, medical images have
+ limited features, and their differences are often imperceptible to the human eye. This could
+ be whythe features/filters/convolutional layers trained on ImageJ may differ from those
+ of medical images, resulting in lower testing performance [45]. In transfer learning, the
+ adapted filters may retain irrelevant features, contaminating the classification process.
+ In summary, researchers have achieved accuracy levels exceeding 95% for COVID-19
+ detection through the selection and refinement of appropriate CNN models. Yet, systems
+ based on these CNN models were often developed using data specific to certain clinics
+ and acquired using their unique imaging modalities. Most proposed models or systems
+ have not been tested on other datasets. It is also noted that even though the COVID-19
+ datasets have become more available, most have not been validated and can be subject
+ to mislabeling, noise, incompleteness, corruption, or low quality [46–49]. One relevant
+ question is how these models or systems that have been trained on one training database
+ will perform on other datasets that inevitably have certain disparities. This question is
+ even more pronounced when the training dataset contains a limited number of images.
+ In this scenario, will the high accuracy of trained models be maintained when tested on
+ larger data or images from other clinics? If not, how much lower accuracy will be expected
+ and/or tolerated? Will adding new images to the original training dataset always improve
+ the model’s performance, and what level of improvement can be expected via re-training
+ the model with extended data? To achieve a desirable classification accuracy, how many
+ newimages should be added to the original training dataset?
+ The objective of this study was to evaluate the performance of CNN models in diag
+nosing COVID-19 and pneumonia in the lungs based on X-ray images from different data
+ sources, as well as to assess the performance variation from multi-level training. Specific
+ aims include the following:
+ Comparing the three-class classification performances of four CNN models: AlexNet,
+ ResNet-50, MobileNet, and VGG-19.
+ For a given model, evaluating the model’s performance on X-ray images from different
+ sources (i.e., inside and outside the training space).
+ Quantifying the benefits of multi-round training with extended data on the model’s
+ performance.
+ Evaluating the model’s interpretability via heatmaps and intermediate activation features.
+ 2. Methods
+ 2.1. COVID-19 and Pneumonia Datasets from Multiple Sources
+ Chest X-ray images were selected from three sources, with each source encompassing
+ the categories of normal, COVID-19, and pneumonia. The first dataset [50–52] contains
+ 10,192 normal cases, 3616 COVID-19 positive cases, and 1345 viral pneumonia images.
+ Amongthese, approximately 80% were used for training (11,538) and 20% for testing (3035),
+ as shown in the left panel of Figure 1a. Both the training and testing datasets were divided
+ in such a way that each split retained approximately the same proportion of samples
+ for each class as in the original dataset (i.e., stratified random sampling). Among the
+ 11,538 training images, 7791 are normal, 2712 are COVID-19, and 1030 are viral pneumonia,
+ constituting a disproportionate distribution of 68%, 24%, and 9%, respectively. Likewise,
+ among the 3035 testing images, 2032 are normal, 742 are COVID-19, and 261 are viral
+ pneumonia. Three sample images typical of normal, COVID-19, and viral pneumonia cases
+ are also shown below.
+, x FOR PEER REVIEW 
+4 of 22 
+Appl. Sci. 2023, 13, 10270
+ 4 of 21
+ Figure 1. Dataset structure: (a) datasets for multi-level testing (four levels) with three categories (nor
+mal, COVID-19, and pneumonia); (b) multi-round training (five rounds); and (c) model performance
+ matrices. The first three X-ray images were from Dataset 1 [50–52], while the other X-ray images were
+ Figure 1. Dataset structure: (a) datasets for multi-level testing (four levels) with three categories 
+(normal, COVID-19, and pneumonia); (b) multi-round training (five rounds); and (c) model perfor
+mance matrices. The first three X-ray images were from Dataset 1 [50–52], while the other X-ray 
+images were from Dataset 2 [53]. 
+from Dataset 2 [53].
+ The second dataset [53] contains 6432 images. Like Dataset 1, stratified random sam
+pling was implemented to set apart 20% (1288) as the level 2 test images, which comprised
+ 855, 317, and 116 for normal, COVID-19, and pneumonia, respectively (Figure 1a). Multi
+The second dataset [53] contains 6432 images. Like Dataset 1, stratified random sam
+pling was implemented to set apart 20% (1288) as the level 2 test images, which comprised 
+855, 317, and 116 for normal, COVID-19, and pneumonia, respectively (Figure 1a). Multi
+center X-ray images were tested to evaluate model applicability in external centers.  
+center X-ray images were tested to evaluate model applicability in external centers.
+ Asubfolder named “Outliers” was created by collecting images from the first and
+ second datasets that are apparently distorted or irregular. Some radiographic images
+ exhibited features such as rotation, distortion, differing magnifications, and variations in
+ contrast and brightness, as shown in the lower panel of Figure 1a. These outlier images
+ were excluded from the Round 1 training dataset. Instead, they were trained at designated
+ proportions (25% and 50%) in Rounds 2 and 3. The “Outliers” dataset consisted of 247 im
+A subfolder named “Outliers” was created by collecting images from the first and 
+second datasets that are apparently distorted or irregular. Some radiographic images ex
+hibited features such as rotation, distortion, differing magnifications, and variations in 
+contrast and brightness, as shown in the lower panel of Figure 1a. These outlier images 
+were excluded from the Round 1 training dataset. Instead, they were trained at designated 
+proportions (25% and 50%) in Rounds 2 and 3. The “Outliers” dataset consisted of 247 
+images and was also used to test CNN models as level 3 test samples. It contained 104 
+normal, 107 COVID-19, and 36 pneumonia cases. Considering that these images have a 
+lower level of similarity to the training images, lower classification accuracies are expected 
+on this test dataset in comparison to the level 1 and level 2 testing datasets.  
+ages and was also used to test CNN models as level 3 test samples. It contained 104 normal,
+ 107 COVID-19, and 36 pneumonia cases. Considering that these images have a lower level
+ of similarity to the training images, lower classification accuracies are expected on this test
+ dataset in comparison to the level 1 and level 2 testing datasets.
+ The third dataset [54] contains 7135 X-ray images. Our initial study indicated that
+ CNNmodelstrained on Dataset 1 consistently performed well on Dataset 2 but poorly on
+ Dataset 3. We thus inferred that the images in Dataset 3 had higher levels of differences. In
+ this study, around 10% (730 images) of Dataset 3 was designated for testing via stratified
+ random sampling, which was used as the Level 4 testing dataset. It comprised 234 normal,
+ 105 COVID-19, and 390 pneumonia cases (right panel, Figure 1a). This dataset functioned
+ similarly to dataset 2 (or Level 2) and was used to substantiate the statistical significance by
+ testing images from an external medical center.
+ The third dataset [54] contains 7135 X-ray images. Our initial study indicated that 
+CNN models trained on Dataset 1 consistently performed well on Dataset 2 but poorly on 
+Dataset 3. We thus inferred that the images in Dataset 3 had higher levels of differences. 
+In this study, around 10% (730 images) of Dataset 3 was designated for testing via strati
+f
+ ied random sampling, which was used as the Level 4 testing dataset. It comprised 234 
+normal, 105 COVID-19, and 390 pneumonia cases (right panel, Figure 1a). This dataset 
+functioned similarly to dataset 2 (or Level 2) and was used to substantiate the statistical 
+significance by testing images from an external medical center.  
+Appl. Sci. 2023, 13, 10270
+ 5 of 21
+ 2.2. Selection of CNN Models
+ The selection of CNN models depended on the training purpose and the model’s
+ specificities. The purpose of this study was to develop a CNN-based automated diagnostic
+ system with high performance for COVID-19 and pneumonia patients based on chest X-ray
+ images. Relevant criteria included the following: high classification accuracy, high sensitiv
+ity and specificity, robust performance across centers, the ability to learn continuously, and
+ the ability to identify discriminative features among categories. Features learned are often
+ abstract, beyond human comprehension or interpolation. However, sometimes they can
+ capture some inherent differences that are consistent with our perceptions, which can be
+ useful in understanding either the etiology or manifestations of a specific disease. Ideally,
+ only defining features are learned from the training dataset; subsequent addition of highly
+ similar images will not bring new features to the CNN model and thus can only marginally
+ improve the CNN model. Only new images with new features introduced to the model
+ will see extra features to refine the classification of the test dataset.
+ Four convolutional neural network (CNN) models were selected for this study:
+ AlexNet, ResNet-50, MobileNet, and VGG-19. AlexNet and ResNet-50 were selected
+ because they were the 2012 and 2015 winners of the ImageNet competition, respec
+tively [32,33]. AlexNet was groundbreaking in its use of GPUs for training deep neural
+ networks, while ResNet-50 introduced residual connections between different layers to
+ improve gradient flow and enable the training of even deeper neural networks [34,35].
+ MobileNet was chosen for its simpler architecture and smaller computational require
+ments [36–39]. It will be desirable to run a computer-aided diagnostic (CAD) system on
+ a personal computer or even a smartphone, provided it can achieve sufficient diagnostic
+ accuracy. VGG-19 was selected for its simplicity, which uses only 3 3 convolutional
+ layers stacked on top of each other in increasing depths. One drawback of VGG-19 is
+ its requirement for more memory than the other three models, primarily due to its fully
+ connected layers.
+ To determine whether the architecture of a pre-trained network is suitable for a test
+ dataset, the following steps were taken. First, the network was trained and tested on the
+ same dataset, providing an initial evaluation of the model’s performance on one testing
+ dataset. In this step, various metrics are evaluated, including accuracy, AUC, specificity,
+ sensitivity, precision, and ROC, to identify areas for improvement (Figure 1c). Second,
+ the pre-trained network was fine-tuned based on the identified areas for improvement by
+ adjusting the hyperparameters or replacing some of its layers to improve its performance.
+ After fine-tuning, the pre-trained network was re-evaluated on the test dataset until its
+ performance reached a threshold classification accuracy.
+ The fine-tuned network model was further tested on additional datasets from the
+ same medical center that the model had never seen before (for instance, newly acquired
+ images). This step evaluates the pre-trained model’s interpolation capacity.
+ In the following step, the model was tested on datasets from other medical centers
+ that belong to the same category (e.g., COVID-19 images, but the model has never seen
+ them before). This step evaluates the pre-trained model’s extrapolation capacity. Even
+ though the X-ray images acquired at any medical center share inherent similarities among
+ COVID-19 patients, differences among COVID-19 images can exist across medical centers,
+ and the performance of the pre-trained model can be affected by such differences.
+ In the next step, the model wasre-trained by adding newimagestothetrainingdataset
+ and re-tested. In this step, two metrics are evaluated: (1) the improvement in performance,
+ and (2) the minimal number of images needed to reach a satisfactory classification accuracy.
+ In doing so, it is hoped to provide a practical example of the CNN-based system when
+ applied in medical centers other than the one where the system was originally trained.
+ 2.3. Study Design for Multi-Level CNN Model Training and Testing
+ The training protocol was conceived to have five rounds, and in each round, testing
+ was conducted at four levels on images differing in quality or similarity (as detailed in
+Appl. Sci. 2023, 13, 10270
+ 6 of 21
+ Table 1). In each test, a three-class classification (normal, COVID-19, and pneumonia) was
+ performed. By training one model through several rounds with augmented datasets and
+ testing its performance on datasets with decreasing similarities, it was aimed to (1) select
+ the optimal CNN model, (2) test the model’s ability for interpolation and extrapolation,
+ and (3) test the model’s ability to learn from new data.
+ Table 1. Five-round (R1–5) training and four-level testing protocol to evaluate models’ capacity for
+ interpolation, extrapolation, and continuous learning. These procedures will be tested on four models
+ (AlexNet, ResNet-50, MobileNet, and VGG-19) for three-class classifications (normal, COVID-19,
+ and pneumonia).
+ Testing
+ Training
+ Level 1
+ Level 2
+ Level 3
+ Level 4
+ R1
+ Base
+ Dataset 1
+ Dataset 2
+ Outliers
+ Dataset 3
+ R2
+ Base, 25%L3 *
+ Dataset 1
+ Dataset 2
+ Outliers
+ Dataset 3
+ R3
+ Base, 50%L3
+ Dataset 1
+ Dataset 2
+ Outliers
+ Dataset 3
+ R4
+ Base, 50%L3, 25%L4 *
+ Dataset 1
+ Dataset 2
+ Outliers
+ Dataset 3
+ R5
+ Base, 50%L3, 50%L4
+ Dataset 1
+ Dataset 2
+ Outliers
+ Dataset 3
+ * L3, L4: Level 3, Level 4.
+ Round 1, referred to as the “baseline training”, incorporated 11,538 radiographic
+ images (baseline, or “Base” for short in Table 1). It was aimed at validating the CNN models
+ (i.e., Level 1) as well as evaluating whether the models can classify new samples that are
+ either similar (Level 2), outliers (Level 3), or have higher levels of dissimilarity (Level 4). In
+ doing so, a preliminary evaluation of the model’s interpolation and extrapolation capacity
+ was obtained, based on which further training and testing could be designed.
+ To evaluate the effects of re-training on model performance, five rounds of training
+ were performed in this study with incrementally extended data. The selection of added
+ images was determined by the testing results in Round 1. In Round 2, 25% of the outlier
+ (Level 3) images were added in the hope that the CNN model could learn the inherent
+ features of those outliers and thus improve the classification accuracy of these outlier
+ images. In Round 3, 50% of the outlier images were added. In comparison to Round 2,
+ this round aimed to quantitatively evaluate the performance improvement as a function of
+ added images.
+ Round 2andRound3training exemplified the processes of model development and
+ optimization within one medical center based on its own data. In contrast, Rounds 4 and
+ 5 training represented scenarios where the automated diagnostic system was used in other
+ medical centers, and when generating sub-optimal performances, it was further improved
+ by including new images to re-train the system. Similarly, the two-round training (Rounds
+ 4 and 5) was designed to quantify performance improvements vs. added images. Round
+ 4 included 25% of dataset 3 training images in addition to the Base and 50% outlier, while
+ Round 5included 50% of dataset 3 training images (Figure 1b, lowest row).
+ To evaluate the network classification performance, various indices were quantified,
+ including accuracy, sensitivity, specificity, precision, AUC (area under the curve), and ROC
+ (receiver operating characteristic) curve. For three-class classification (i.e., 1, 2, 3), the
+ performance matrices were extended from their binary counterparts. Based on a three
+class confusion matrix (blue dashed rectangle) in Figure 1c, the accuracy is the ratio of
+ correct predictions over all predictions (Figure 1c, left bottom). The category-wise matrices
+ (specificity, sensitivity, and precision) were calculated using the equations listed to the
+ right of Figure 1c. For the Receiver Operating Characteristic (ROC) curve, the One-vs-Rest
+ approach (OvR) was used, e.g., COVID vs. (normal plus pneumonia). In this study, all
+ category-wise matrices were presented for COVID unless stated otherwise.
+ The CNNmodeltraining/testing was conducted using an AMD Ryzen 3960X 24-Core
+ workstation with 3.79 GHz processors, 256 GB RAM, and 24 GB GPU (PNY NVIDIA
+Appl.Sci.2023,13,10270 7of21
+ GeForceRTX3090).Fortheapproximately12,000imagesusedinthisstudy,oneroundof
+ trainingforoneCNNmodeltookapproximately4–7h.
+ 3.Results
+ 3.1.Round1TrainingandTesting(ModelDevelopmentandVerification)
+ Table2summarizesthemodelperformanceinRound1offourdeepneuralnetworks
+ (i.e.,AlexNet,ResNet-50,MobileNet,andVGG-19)ontestdatasetsfromvarioussources
+ andwithfourlevelsofimagesimilarity.
+ Table2.Round1performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and
+ VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for
+ three-classclassifications(normal,COVID-19,pneumonia).
+ Network Round1(%) Level1 Level2 Level3 Level4
+ AlexNet
+ Accuracy 98.91 97.93 57.44 84.11
+ AUC 99.94 99.95 78.52 99.47
+ Specificity 97.71 95.75 74.10 97.78
+ Sensitivity 99.51 99.19 34.95 55.13
+ Precision 98.88 97.60 50.00 92.14
+ ResNet-50
+ Accuracy 99.08 97.93 58.26 87.40
+ AUC 99.97 99.91 76.46 98.22
+ Specificity 97.21 94.34 72.66 91.94
+ Sensitivity 100.00 100.00 38.33 77.78
+ Precision 98.64 96.85 51.28 81.98
+ MobileNet
+ Accuracy 99.24 98.28 52.89 86.30
+ AUC 99.93 99.98 83.12 99.40
+ Specificity 97.91 97.17 71.22 95.56
+ Sensitivity 99.90 98.92 28.16 66.67
+ Precision 98.98 98.38 42.03 87.64
+ VGG-19
+ Accuracy 95.22 94.66 55.79 84.66
+ AUC 99.24 99.15 73.31 98.93
+ Specificity 91.43 90.09 64.75 92.74
+ Sensitivity 97.10 97.29 43.69 67.52
+ Precision 95.82 94.47 47.87 81.44
+ AtLevel1,allmodels,exceptforVGG-19,showedexceptionalperformance,achieving
+ accuracyratesofover98%.TheAUC,anindicatorofamodel’scapacitytodistinguish
+ betweenclasses,wasabove99%forallmodels.ResNet-50ledthismetricwithanAUCof
+ 99.97%,followedcloselybyAlexNet,MobileNet,andVGG-19with99.94%,99.93%,and
+ 99.24%,respectively.
+ AtLevel2,withX-rayimagesfromadifferentsource,themodelsmaintainedhighper
+formance,albeitwithaslightdecreaseinmostmetrics.Althoughthesensitivityremained
+ highacrossallmodels,thespecificityshowedaminordecreasecomparedtoLevel1,yetit
+ remainedsufficientlyhigh,underlininganefficientabilitytocorrectlyidentifynegative
+ cases.Amongthefourmodelsconsidered,VGG-19exhibitedthelowestspecificity(~90%)
+ whentestedonbothLevel1andLevel2images.Theotherthreemodelsallhadaspecificity
+ of94%orhigher.
+ However,progressingfromLevel2toLevel3,whichcomprisedoutliersfromdatasets
+ 1and2, therewasadrasticdeclineinperformanceinallmodels,mostnoticeablyin
+ sensitivityandprecisionmetrics(Figure2). Thisdecreasewaslikelyattributedtothe
+ increasedcomplexityoralterationsinimagepresentationsatLevel3. Inparticular, the
+ sensitivityofMobileNetdecreasedfrom97%+to28%(Table2).Thelargedropinsensitivity
+ suggestedadiminishingabilityofthemodelstocorrectlyidentifypositivecaseswhen
+ testedonLevel3ortheoutlierimages.Similarly,adeclineinprecisionfrom97%atLevel
+Appl. Sci. 2023, 13, x FOR PEER REVIEW 
+8 of 22 
+Appl. Sci. 2023, 13, x FOR PEER REVIEW 
+8 of 22 
+Appl. Sci. 2023, 13, 10270
+ 8 of 21
+ suggested a diminishing ability of the models to correctly identify positive cases when 
+tested on Level 3 or the outlier images. Similarly, a decline in precision from 97% at Level 
+2 to 48% on average (Figure 2) at Level 3 implied a reduced proportion of correct positive 
+identifications.  
+suggested a diminishing ability of the models to correctly identify positive cases when 
+tested on Level 3 or the outlier images. Similarly, a decline in precision from 97% at Level 
+2 to 48% on average (Figure 2) at Level 3 implied a reduced proportion of correct positive 
+identifications.  
+2 to 48% onaverage (Figure 2) at Level 3 implied a reduced proportion of correct positive
+ identifications.
+ Figure 2. Averaged model performance metrics at four levels of testing after Round 1 training. 
+Figure 2. Averaged model performance metrics at four levels of testing after Round 1 training.
+ Figure 2. Averaged model performance metrics at four levels of testing after Round 1 training. 
+At Level 4, which represented images from an external medical facility, all models
+ showed a decline in classification accuracy compared to Level 2, e.g., from 97% to 86%
+ on average. Although the AUC values remained high for all four models (~99%), both
+ At Level 4, which represented images from an external medical facility, all models 
+showed a decline in classification accuracy compared to Level 2, e.g., from 97% to 86% on 
+average. Although the AUC values remained high for all four models (~99%), both sensi
+tivity and precision experienced a substantial drop. On average, from Level 2 to Level 4, 
+sensitivity decreased from 99% to 67%, and precision decreased from 97% to 86%, as 
+shown in Figure 2. This trend indicated a reduced efficiency of the models in accurately 
+identifying true positive cases and in the precision of positive identifications in this set
+ting. 
+sensitivity and precision experienced a substantial drop. On average, from Level 2 to Level
+ 4, sensitivity decreased from 99% to 67%, and precision decreased from 97% to 86%, as
+ shown in Figure 2. This trend indicated a reduced efficiency of the models in accurately
+ At Level 4, which represented images from an external medical facility, all models 
+showed a decline in classification accuracy compared to Level 2, e.g., from 97% to 86% on 
+average. Although the AUC values remained high for all four models (~99%), both sensi
+tivity and precision experienced a substantial drop. On average, from Level 2 to Level 4, 
+sensitivity decreased from 99% to 67%, and precision decreased from 97% to 86%, as 
+shown in Figure 2. This trend indicated a reduced efficiency of the models in accurately 
+identifying true positive cases and in the precision of positive identifications in this set
+ting. 
+identifying true positive cases and in the precision of positive identifications in this setting.
+ 3.2. Round 2 Training and Testing (Model Improvement by Adding 25% Outliers) 
+3.2. Round 2 Training and Testing (Model Improvement by Adding 25% Outliers)
+ Table 3 shows the results of the second round of training (Round 2) using the base
+ images supplemented with 25% outliers. A comparison between R2 and other rounds is
+ 3.2. Round 2 Training and Testing (Model Improvement by Adding 25% Outliers) 
+showninFigure3. Considering Level 1 andLevel 2testing results, all models demonstrated
+ high performance with accuracy exceeding 98% and AUC exceeding 99.8% (except VGG-19
+ Table 3 shows the results of the second round of training (Round 2) using the base 
+images supplemented with 25% outliers. A comparison between R2 and other rounds is 
+shown in Figure 3. Considering Level 1 and Level 2 testing results, all models demon
+strated high performance with accuracy exceeding 98% and AUC exceeding 99.8% (except 
+VGG-19 at Level 2 with a 95% accuracy). Compared to Round 1, the sensitivity of all mod
+els remained high (~99%) despite a minor decrease (<1%); meanwhile, both the specificity 
+and precision increased slightly (~1%).  
+at Level 2 with a 95% accuracy). Compared to Round 1, the sensitivity of all models
+ remained high (~99%) despite a minor decrease (<1%); meanwhile, both the specificity and
+ precision increased slightly (~1%).
+ Table 3 shows the results of the second round of training (Round 2) using the base 
+images supplemented with 25% outliers. A comparison between R2 and other rounds is 
+shown in Figure 3. Considering Level 1 and Level 2 testing results, all models demon
+strated high performance with accuracy exceeding 98% and AUC exceeding 99.8% (except 
+VGG-19 at Level 2 with a 95% accuracy). Compared to Round 1, the sensitivity of all mod
+els remained high (~99%) despite a minor decrease (<1%); meanwhile, both the specifi
+ and precision increased slightly (~1%).  
+Figure 3. Comparison of averaged classification metrics of the four CNN models with different
+ Figure 3. Comparison of averaged classification metrics of the four CNN models with different 
+training datasets (i.e., Rounds 1–5), (a) Level 3, and (b) Level 4. 
+training datasets (i.e., Rounds 1–5), (a) Level 3, and (b) Level 4.
+ At Level 3, all considered models exhibited marked performance improvements,
+ suggesting that the addition of 25% outliers, equating to 62 randomly selected images,
+ effectively addressed the shortfall in outlier-related features. Notably, the classification
+ accuracy increased from 56% to 71% on average, while the sensitivity jumped from 36%
+ to 67% (Figure 3a). This sharp rise in sensitivity highlighted two factors: (1) The Round
+ 1 training dataset (i.e., Base) shared minimal commonality with outlier discriminative
+ features, resulting in notably low accuracy and sensitivity, and (2) even adding a small
+ Figure 3. Comparison of averaged classification metrics of the four CNN models with different 
+training datasets (i.e., Rounds 1–5), (a) Level 3, and (b) Level 4. 
+Appl.Sci.2023,13,10270 9of21
+ number(62)ofrelevant imagestoalargetrainingdataset (Base,11,538images)could
+ significantlyimprovemodelperformance,particularlythesensitivity.Otherperformance
+ metricsalsoimprovedsubstantially,withAUCincreasingfrom78%to90%andprecision
+ from48%to66%.Therewasaslightincreaseinspecificity,from71%to74%,likelydueto
+ thesignificantimbalanceinthedistributionofoutlierscomparedtoregularimagesinthe
+ trainingdatasets(62vs.11,538).
+ Table3.Round2performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and
+ VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for
+ three-classclassifications(normal,COVID-19,pneumonia).
+ Network Round2(%) Level1 Level2 Level3 Level4
+ AlexNet
+ Accuracy 98.15 98.28 71.90 80.55
+ AUC 99.87 99.94 91.72 99.26
+ Specificity 97.05 96.70 75.54 98.19
+ Sensitivity 98.68 99.19 66.99 43.16
+ Precision 98.58 98.12 66.99 91.82
+ ResNet-50
+ Accuracy 99.54 98.45 77.69 86.71
+ AUC 99.89 99.96 92.93 99.91
+ Specificity 99.00 97.17 81.29 97.18
+ Sensitivity 99.80 99.19 72.82 64.53
+ Precision 99.51 98.39 74.26 91.52
+ MobileNet
+ Accuracy 98.76 98.80 71.07 83.84
+ AUC 99.88 99.99 91.91 98.90
+ Specificity 98.11 98.11 75.54 96.98
+ Sensitivity 99.08 99.19 65.05 55.98
+ Precision 99.08 98.92 66.34 89.73
+ VGG-19
+ Accuracy 98.62 94.66 62.40 82.19
+ AUC 99.92 99.42 83.22 98.73
+ Specificity 98.31 91.51 61.87 94.15
+ Sensitivity 98.77 96.48 63.11 56.84
+ Precision 99.16 95.19 55.08 82.10
+ Round2modelperformanceatLevel4testing(externalcenter)wasmarkedbyaslight
+ decreaseinclassificationaccuracy(i.e.,from86%to83%)butalargedecreaseinsensitivity
+ (i.e., from67%to55%,Figure3b).Ontheotherhand, thespecificityincreasedslightly,
+ from95%to97%(Figure3b).TheAUCandprecisionmetricsdisplayedmixedtrendsand
+ varyingmagnitudes(Table2).
+ 3.3.Round3TrainingandTesting(ModelRefinementbyAdding50%Outliers)
+ Furtheraddingoutliers(anadditional25%,or62images)totheRound-2training
+ datasetfurtherimprovedthemodelperformanceonLevel3testing. Incomparisonto
+ Round2, theaccuracyincreasedfrom71%to83%andthesensitivityfrom67%to86%
+ onaverageforallmodelsconsidered,aslistedinTable4andFigure3a.Theotherthree
+ metricsalsoimproved,withtheAUCincreasingfrom90%to96%,specificityfrom74%to
+ 81%,andprecisionfrom66%to77%onaverage(Table4andFigure3a).Thisindicatesthat
+ therewasstillroomformodelimprovementaftertheadditionof164imagestotheBase
+ trainingdataset.Bycomparison,themodelperformanceremainedrelativelyunchangedat
+ Level1andLevel2,partiallybecauseofthesmallproportionofimagesaddedtotheBase
+ trainingdataset. InsignificantchangesbetweenRound2andRound3werealsoobserved
+ atLevel4(Figure3b),duetotheweakcorrelationbetweentheOutliersandLevel4dataset.
+Appl.Sci.2023,13,10270 10of21
+ Table4.Round3performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and
+ VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for
+ three-classclassifications(normal,COVID-19,pneumonia).
+ Network Round3(%) Level1 Level2 Level3 Level4
+ AlexNet
+ Accuracy 99.11 98.80 85.54 82.05
+ AUC 99.94 99.98 97.92 99.71
+ Specificity 98.01 98.11 84.89 97.38
+ Sensitivity 99.66 99.19 86.41 49.57
+ Precision 99.02 98.92 80.91 89.92
+ ResNet-50
+ Accuracy 98.45 97.76 88.02 77.12
+ AUC 99.90 99.89 96.82 99.40
+ Specificity 97.31 95.75 84.89 76.61
+ Sensitivity 99.02 98.92 92.23 78.21
+ Precision 98.68 97.59 81.90 61.20
+ MobileNet
+ Accuracy 98.91 98.80 84.71 82.47
+ AUC 99.89 100.00 96.91 99.78
+ Specificity 97.51 98.58 82.73 97.78
+ Sensitivity 99.61 98.92 87.38 50.00
+ Precision 98.78 99.18 78.95 91.41
+ VGG-19
+ Accuracy 95.16 93.12 73.55 81.51
+ AUC 99.15 99.23 92.35 99.09
+ Specificity 89.43 84.91 69.78 95.56
+ Sensitivity 97.98 97.83 78.64 51.71
+ Precision 94.95 91.86 65.85 84.62
+ 3.4.Round4and5TrainingandTesting
+ FortheLevel4testingdataset,modelclassificationaccuracieswerepersistentlyob
+servedtoremainaround80%inRounds1–3. Thiswasreasonableconsideringthatthe
+ Rounds1–3modelsweretrainedpredominatelyonDataset1,whichmightmisscertain
+ featuresinherentinLevel4images(Dataset3).Thisunderscoresthefactthatsimplyadding
+ irrelevant imagestothetrainingsetdoesnotenhancemodelperformance, reinforcing
+ thepivotalimportanceofdataqualityandrelevanceinmodeltraining. InRounds4and
+ 5,25%and50%oftheLevel4images(730)wereaddedtotheRound-3trainingdataset,
+ respectively.TheperformancemetricsarelistedinTables5and6.
+ FromTable5,itwasnotedthattheclassificationmetricsatLevels1–3changedinsignif
+icantly(e.g.,0.1–2%)betweenRound4andRound3forallmodelsconsidered.Themetric
+ variationswerealsomixedintrend. Sensitivitywastheonlyexception,experiencinga
+ decreaseacrossallmodels.Thissuggeststhatintroducingnew,non-relevantfeaturesor
+ imagescanunderminethemodel’scapacitytorecognizepertinentfeatures.
+ AtLevel4,adding25%Level-4imagestotheRound-3trainingdatasetresultedin
+ asubstantialincreaseinallperformancemetrics.ComparedtoRound3,thesensitivity
+ increasedby27%(from57%to84%),accuracyby11%(from81%to92%),precisionby9%
+ (from82%to91%),specificityby4%(from92%to96%),andAUCby0.4%(from99.5%
+ to99.9%),asshowninbothTable5andFigure3b.Notethatanaverageclassification
+ accuracyof92%isdeemedsatisfactoryinmanyclinicalapplications,underscoringthe
+ benefitsofmulti-roundtrainingwithextendeddata,evenwhenexposedtoalimitedsetof
+ newimages(inthiscase,25%of730or183images).
+ Table6showstheRound-5training/testingresultsafteraddinganother25%ofLevel
+4imagestotheRound-4trainingdataset.TheclassificationaccuracytestedontheLevel
+4imagesreached95%,upfrom92%inRound4(Figure3b).Thesensitivityshowedthe
+ largestmagnitudeofincrease,i.e.,5%(from84%to89%).Ontheotherhand,thespecificity
+ increasedfrom96%to97%(1%)andtheprecisionfrom91%to94%(3%),asshownin
+ Figure3b.
+Appl.Sci.2023,13,10270 11of21
+ Table5.Round4performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and
+ VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for
+ three-classclassifications(normal,COVID-19,pneumonia).
+ Network Round4(%) Level1 Level2 Level3 Level4
+ AlexNet
+ Accuracy 98.91 98.45 85.95 90.96
+ AUC 99.95 99.98 97.73 99.89
+ Specificity 98.01 97.17 86.33 98.59
+ Sensitivity 99.36 99.19 85.44 74.79
+ Precision 99.02 98.39 82.24 96.15
+ ResNet-50
+ Accuracy 98.85 98.11 86.36 93.01
+ AUC 99.93 99.87 96.00 99.98
+ Specificity 97.51 96.23 84.17 90.73
+ Sensitivity 99.51 99.19 89.32 97.86
+ Precision 98.78 97.86 80.70 83.27
+ MobileNet
+ Accuracy 99.08 98.28 85.54 93.15
+ AUC 99.91 99.97 97.33 99.87
+ Specificity 98.21 97.17 85.61 98.79
+ Sensitivity 99.51 98.92 85.44 81.20
+ Precision 99.12 98.38 81.48 96.94
+ VGG-19
+ Accuracy 94.86 94.32 71.49 90.55
+ AUC 98.94 99.01 91.01 99.70
+ Specificity 88.53 88.68 67.63 95.36
+ Sensitivity 97.98 97.56 76.70 80.34
+ Precision 94.54 93.75 63.71 89.10
+ Table6.Round5performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and
+ VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for
+ three-classclassifications(normal,COVID-19,pneumonia).
+ Network Round5(%) Level1 Level2 Level3 Level4
+ AlexNet
+ Accuracy 98.85 98.28 84.30 94.25
+ AUC 99.96 99.90 97.66 99.91
+ Specificity 98.01 97.64 84.89 98.99
+ Sensitivity 99.26 98.64 83.50 84.19
+ Precision 99.02 98.64 80.37 97.52
+ ResNet-50
+ Accuracy 98.45 98.45 83.06 95.89
+ AUC 99.91 99.96 95.97 99.92
+ Specificity 97.61 97.17 83.45 94.56
+ Sensitivity 98.87 99.19 82.52 98.72
+ Precision 98.82 98.39 78.70 89.53
+ MobileNet
+ Accuracy 99.04 98.97 86.78 96.16
+ AUC 99.88 100.00 97.09 99.98
+ Specificity 97.81 97.64 84.17 98.99
+ Sensitivity 99.66 99.73 90.29 90.17
+ Precision 98.93 98.66 80.87 97.69
+ VGG-19
+ Accuracy 95.02 93.46 73.55 91.92
+ AUC 99.19 99.31 91.42 99.93
+ Specificity 88.63 84.43 71.94 96.57
+ Sensitivity 98.18 98.64 75.73 82.05
+ Precision 94.59 91.69 66.67 91.87
+ AtLevel3,smallvariationswithmixedtrendswereobservedbetweenRound4and
+ 5trainedmodels.Overall,addingtrainingimagesthatwereirrelevanttoLevel3ledto
+ aslightdecreaseinmodelperformance(0.4%onaverage,Table6).Comparingthefour
+ models,muchlowerprecisionandaccuracywereobservedforVGG-19thanforother
+ models(i.e.,67%vs.80 1%and74%vs.85 1.5%,respectively),asshowninFigure4.
+Appl.Sci.2023,13,10270 12of21
+ ThisobservationpersistedinRound4(64%vs.81 0.6%and71%vs.86 0.3%),Round
+ 3(66%vs.81 1.2%and74%vs.86 1.4%),andRound2(55%vs.69 3.6%and62%
+ vs.74 2.9%),eventhoughVGG-19hadanequivalentLevel-3precisionandaccuracyin
+ Round1(48%vs.48 4.1%and56%vs.56 2.4%,Figure4).Thus,basedonthedatasets
+ inthisstudy,VGG-19exhibitedadiminishedresponsetore-trainingwithextendeddata,
+ comparedtotheotherthreemodels.
+ At Level 3, small variations with mixed trends were observed between Round 4 and 
+5 trained models. Overall, adding training images that were irrelevant to Level 3 led to a 
+slight decrease in model performance (0.4% on average, Table 6). Comparing the four 
+models, much lower precision and accuracy were observed for VGG-19 than for other 
+models (i.e., 67% vs. 80 ± 1% and 74% vs. 85 ± 1.5%, respectively), as shown in Figure 4. 
+This observation persisted in Round 4 (64% vs. 81 ± 0.6% and 71% vs. 86 ± 0.3%), Round 3 
+(66% vs. 81 ± 1.2% and 74% vs. 86 ± 1.4%), and Round 2 (55% vs. 69 ± 3.6% and 62% vs. 74 
+± 2.9%), even though VGG-19 had an equivalent Level-3 precision and accuracy in Round 
+1 (48% vs. 48 ± 4.1% and 56% vs. 56 ± 2.4%, Figure 4). Thus, based on the datasets in this 
+study, VGG-19 exhibited a diminished response to re-training with extended data, com
+pared to the other three models.  
+ 
+ 
+Figure 4. Performance comparison among different models at Level 3 among five rounds of training: 
+(a) accuracy and (b) precision. 
+  
+Figure4.PerformancecomparisonamongdifferentmodelsatLevel3amongfiveroundsoftraining:
+ (a)accuracyand(b)precision.
+ 3.5.ModelSelection
+ ROC(receiveroperatingcharacteristic)curvesaredisplayedforthetrainingphaseof
+ Rounds1,2,and4.TheROCcurvesatLevels1and2arenearperfectandthusarenot
+ presented.AtLevel3(upperpanel,Figure5),fortheOutlierstestingdataset,re-training
+ withextendeddatamovedallcurvestowardthetop-leftcornerofthegraph,indicating
+ improveddiscriminatorypowerforallmodelsconsidered(Figure5a–c).Amongthem,
+ VGG-19exhibitedthelowestimprovementinalltrainingphases.Theotherthreemodels
+ showedinsignificantdiscrepanciesinRound4(Figure5c);however,inRound2,ResNet-50
+ showedthebestperformance(learnability),withamuchlowerthresholdoffalsepositive
+ ratefora95%detectionratethanAlexNetandMobileNet.
+ AtLevel4(lowerpanel,Figure5),forexternaltestingimages,theROCcurveswere
+ alreadyskewedtowardstheupper-leftcorner.Modelperformancesconstantlyincreased
+ fromRound1toRound4,andResNet-50remainedtheoptimaloneamongthefour.
+ TheROCcurvesofResNet-50arecomparedacrossRounds1–5inFigure6atLevel
+ 3andLevel4.NotethatinRound2andRound3,thetrainingdatasetwasextendedby
+ adding25%and50%outlierimages(Level3).Asaresult,thedetectionrateontheLevel3
+ datasetincreaseddrasticallyfromRound1toRound2,aswellasfromRound2toRound3,
+ butatalowerrate(Figure6a). InRounds4and5,addingexternalsource(Level4)images
+ didnotimproveResNet-50sdetectionrateontheLevel3dataset,butratherdecreased
+ itslightly(Figure6a).AtLevel4(i.e.,datasetfromexternalcenters),veryhighdetection
+3.5. Model Selection 
+Appl. Sci. 2023, 13, 10270
+ 13 of 21
+ ROC (receiver operating characteristic) curves are displayed for the training phase of 
+Rounds 1, 2, and 4. The ROC curves at Levels 1 and 2 are near perfect and thus are not 
+presented. At Level 3 (upper panel, Figure 5), for the Outliers testing dataset, re-training 
+with extended data moved all curves toward the top-left corner of the graph, indicating 
+improved discriminatory power for all models considered (Figure 5a–c). Among them, 
+VGG-19 exhibited the lowest improvement in all training phases. The other three models 
+showed insignificant discrepancies in Round 4 (Figure 5c); however, in Round 2, ResNet
+50 showed the best performance (learnability), with a much lower threshold of false pos
+itive rate for a 95% detection rate than AlexNet and MobileNet.  
+rates were achieved by adding external but relevant training images, as evidenced by
+ the ROC curves that were highly skewed towards the upper-left corner. As a result, the
+ ResNet-50 model trained in Round 5 was more accurate and had wider applicability than
+ the ResNet-50 model trained in Round 1.
+ Appl. Sci. 2023, 13, x FOR PEER REVIEW 
+14 of 22 
+Figure 5. ROC (receiver operating characteristic) curves for COVID detection at Level 3 (Outliers)
+ Figure 5. ROC (receiver operating characteristic) curves for COVID detection at Level 3 (Outliers) 
+and Level 4 (External center) in (a) Round 1, (b) Round 2, and (c) Round 4. 
+and Level 4 (External center) in (a) Round 1, (b) Round 2, and (c) Round 4.
+ At Level 4 (lower panel, Figure 5), for external testing images, the ROC curves were 
+already skewed towards the upper-left corner. Model performances constantly increased 
+from Round 1 to Round 4, and ResNet-50 remained the optimal one among the four. 
+The ROC curves of ResNet-50 are compared across Rounds 1–5 in Figure 6 at Level 3 
+and Level 4. Note that in Round 2 and Round 3, the training dataset was extended by 
+adding 25% and 50% outlier images (Level 3). As a result, the detection rate on the Level 
+3 dataset increased drastically from Round 1 to Round 2, as well as from Round 2 to Round 
+3, but at a lower rate (Figure 6a). In Rounds 4 and 5, adding external source (Level 4) 
+images did not improve ResNet-50′s detection rate on the Level 3 dataset, but rather de
+creased it slightly (Figure 6a). At Level 4 (i.e., dataset from external centers), very high 
+detection rates were achieved by adding external but relevant training images, as evi
+denced by the ROC curves that were highly skewed towards the upper-left corner. As a 
+result, the ResNet-50 model trained in Round 5 was more accurate and had wider applica
+bility than the ResNet-50 model trained in Round 1.  
+Figure 6. ROC curves of ResNet-50 in Rounds 1–5 training when tested on datasets of (a) Level
+ Figure 6. ROC curves of ResNet-50 in Rounds 1–5 training when tested on datasets of (a) Level 3 
+(outliers) and (b) Level 4 (external center). 
+3 (outliers) and (b) Level 4 (external center).
+ Toevaluatethemulti-roundtrainingeffects on category-wise performance(i.e., normal,
+ COVID-19, and pneumonia), the misclassification rate at Level 4 by ResNet-50 was further
+ broken down into individual groups in Round 1 and Round 5, as shown in Figure 7a. Note
+ that in Round 1, the Level-4 ResNet-50 accuracy was 87.4% (Table 2), which resulted from
+ individual accuracies of 78.8% for normal, 83.0% for COVID-19, and 94.4% for pneumonia.
+ For each category, the misclassification rates for one of the other two categories were also
+ calculated. For instance, a 22.2% misclassification rate (100–78.8%) of normal cases included
+ COVID-19 (Figure 7a).
+ To evaluate the multi-round training effects on category-wise performance (i.e., nor
+mal, COVID-19, and pneumonia), the misclassification rate at Level 4 by ResNet-50 was 
+further broken down into individual groups in Round 1 and Round 5, as shown in Figure 
+7a. Note that in Round 1, the Level-4 ResNet-50 accuracy was 87.4% (Table 2), which re
+sulted from individual accuracies of 78.8% for normal, 83.0% for COVID-19, and 94.4% for 
+pneumonia. For each category, the misclassification rates for one of the other two catego
+ries were also calculated. For instance, a 22.2% misclassification rate (100–78.8%) of normal 
+cases included 2.1% of cases inaccurately predicted as COVID-19 (brown color) and 20.1% 
+as pneumonia (grey color), as shown in Figure 7a. Similarly, a 17.7% misclassification rate 
+of COVID-19 all came from their incorrect prediction as normal, while a 5.6% misclassifi
+cation rate of pneumonia included 5.3% incorrectly predicted as normal and the remain
+ing 0.3% as COVID-19 (Figure 7a).  
+2.1% of cases inaccurately predicted as COVID-19 (brown color) and 20.1% as pneumonia
+ (grey color), as shown in Figure 7a. Similarly, a 17.7% misclassification rate of COVID-19
+ all came from their incorrect prediction as normal, while a 5.6% misclassification rate
+ of pneumonia included 5.3% incorrectly predicted as normal and the remaining 0.3% as
+Appl.Sci.2023,13,10270 14of21
+ ries were also calculated. For instance, a 22.2% misclassification rate (100–78.8%) of normal 
+cases included 2.1% of cases inaccurately predicted as COVID-19 (brown color) and 20.1% 
+as pneumonia (grey color), as shown in Figure 7a. Similarly, a 17.7% misclassification rate 
+of COVID-19 all came from their incorrect prediction as normal, while a 5.6% misclassifi
+cation rate of pneumonia included 5.3% incorrectly predicted as normal and the remain
+ing 0.3% as COVID-19 (Figure 7a).  
+ 
+Figure 7. Comparison of misclassification rates between Round 1 and Round 5 for (a) ResNet-50 and 
+(b) VGG-19. 
+In Round 5, the misclassifications of normal as COVID-19 and pneumonia were 
+greatly reduced, improving the model’s specificity (right vs. left panels, Figure 7a). A sim
+ilarly significant reduction was also observed in the misclassification of COVID-19 as nor
+mal, thus improving the model’s sensitivity. However, the misclassification of COVID-19 
+as pneumonia increased (i.e., from 0% to 1.9%). The misclassification of pneumonia as 
+normal also increased slightly (i.e., from 5.1% to 6.2%, Figure 7a), which would partially 
+reduce the model’s sensitivity.  
+Figure7.ComparisonofmisclassificationratesbetweenRound1andRound5for(a)ResNet-50and
+ (b)VGG-19.
+ InRound5,themisclassificationsofnormalasCOVID-19andpneumoniaweregreatly
+ reduced,improvingthemodel’sspecificity(rightvs. leftpanels,Figure7a).Asimilarly
+ significantreductionwasalsoobservedinthemisclassificationofCOVID-19asnormal,
+ thusimprovingthemodel’ssensitivity.However, themisclassificationofCOVID-19as
+ pneumoniaincreased(i.e.,from0%to1.9%).Themisclassificationofpneumoniaasnormal
+ alsoincreasedslightly(i.e.,from5.1%to6.2%,Figure7a),whichwouldpartiallyreducethe
+ model’ssensitivity.
+ Forcomparisonpurposes,theVGG-19misclassificationsinindividualcategoriesare
+ showninFigure7bintheleftandrightpanelsforRound1andRound5, respectively.
+ Notethesamerangeinthey-coordinate(0–25%) inthesetwopanels. Althoughthere
+ werenoteworthydecreasesinmisclassification,thescaleofthesereductionswasevidently
+ lesssignificantcomparedtoResNet-50,especiallyinthemispredictionsfromnormalto
+ pneumoniaandfromCOVID-19tonormal.ThisimpliedthatVGG-19hadalowerlearning
+ capacitycomparedtoResNet-50forthedatasetinthisstudy.
+ Interestingly, themisclassificationratebetweenCOVID-19andpneumoniaisvery
+ low,withthehighestrateof1.9%forResNet-50(COVID-19-to-pneumoniainRound5)and
+ 1.8%forVGG-19(pneumonia-to-COVID-19inRound1),asshowninFigure7a,b.Thislow
+ mutualmisclassificationindicatedthatdiscriminatoryfeaturesbetweenthesecategories
+ mighthavebeenadequatelyidentifiedbybothCNNmodels.
+ 3.6.ModelVisualization
+ Heatmapsprovideavisualizationofwhichpartsofanimageareimportantforclassi
+ficationdecisions.Thesepartscanbecorrelatedtotheclinicalorempiricalobservations
+ thatphysiciansrelyontoreachtheirdiagnosticdecisions.Figure8ashowstheheatmapsin
+ termsofocclusionsensitivityinthesampleimagesofnormal,COVID-19,andpneumonia
+ inRound1.Hotspotsarethosethat,whenoccluded,willcauseasignificantdropinthe
+ model’sprediction. Interestingly,theheatmapsdifferedremarkablyamongmodels,even
+ foranidenticalimage,indicatingverydifferentdiscriminatoryfeaturesusedindifferent
+ CNNmodels.Consideringthenormalimage,nohotspotswerepredictedwithinthelung
+ byallmodelsexceptVGG-19.ForCOVID-19(secondrow),scatteredzonesofintermediate
+ sensitivities(opacities)werepredictedwithinthelungs.Bycontrast,sporadichotspotswere
+Appl.Sci.2023,13,10270 15of21
+ observedinthepneumoniaimage. Inparticular,alargezonewithintermediate-to-high
+ sensitivitieswasemployedinthelowerlobesbyResNet-50.
+ nia in Round 1. Hotspots are those that, when occluded, will cause a significant drop in 
+the model’s prediction. Interestingly, the heatmaps differed remarkably among models, 
+even for an identical image, indicating very different discriminatory features used in dif
+ferent CNN models. Considering the normal image, no hotspots were predicted within 
+the lung by all models except VGG-19. For COVID-19 (second row), scattered zones of 
+intermediate sensitivities (opacities) were predicted within the lungs. By contrast, spo
+radic hotspots were observed in the pneumonia image. In particular, a large zone with 
+intermediate-to-high sensitivities was employed in the lower lobes by ResNet-50.  
+ 
+Figure 8. Occlusion sensitivity map for the sample images of normal, COVID-19, and pneumonia at 
+(a) Round 1 and (b) Round 5. 
+Figure 8b shows the occlusion sensitivity using ResNet-50 in Round 5. After four 
+more rounds of training by exposing them to an incrementally enriched dataset, the 
+heatmaps in Round 5 appeared more indicative and intuitive than in Round 1 with respect 
+to the clinical manifestations, which exhibited a clear lung in the normal case, dispersed 
+opacities and occasional hotspots in COVID-19, and a large region of hotspots in the lower 
+lobes in pneumonia. The improved interpretability from Round 1 to Round 5 underscored 
+the potential benefits of multi-round training on model performance.  
+Figure8.Occlusionsensitivitymapforthesampleimagesofnormal,COVID-19,andpneumoniaat
+ (a)Round1and(b)Round5.
+ Figure8bshowstheocclusionsensitivityusingResNet-50inRound5.Afterfourmore
+ roundsoftrainingbyexposingthemtoanincrementallyenricheddataset,theheatmaps
+ inRound5appearedmoreindicativeandintuitivethaninRound1withrespecttothe
+ clinicalmanifestations,whichexhibitedaclearlunginthenormalcase,dispersedopacities
+ andoccasionalhotspotsinCOVID-19,andalargeregionofhotspotsinthelowerlobes
+ inpneumonia.TheimprovedinterpretabilityfromRound1toRound5underscoredthe
+ potentialbenefitsofmulti-roundtrainingonmodelperformance.
+ Next,weexaminedtheimpactofmulti-roundtraining(Rounds1–5)ontheGrad-CAM
+ heatmappredictedbyResNet-50(Figure9).Grad-CAM,shortforGradient-weightedClass
+ ActivationMapping,computedthegradientsofthemodel’sclassscoreswithrespecttothe
+ finalconvolutionallayer’sfeaturemapsandonlykeptfeatureswithpositivecontributions.
+ FromtheheatmapvariationsacrossRounds1–5,wecouldseetheprogressionofResNet
+50’slearningbehaviorbygraduallyincludingmorediverseimages. Itwasnotedthatthe
+ threeimageswereallcorrectlypredicted.LiketheocclusionsensitivityinFigure8, the
+ Grad-CAMheatmapofthenormalimagewasclearinthelunginallfiverounds(theupper
+ panels,Figure9a–e),whichwasconsistentwiththefinalpredictionforthenormalclass.
+ ConsideringtheCOVID-19image,hotspotsofGrad-CAMwereobservedmainlyinthe
+ middleandupperlungs.However,theintensityandlocationofthesehotspotsvariedfrom
+ Round1toRound5,andthisvariationdidnotshowaregularpatterninthisexample.
+ Thus,explicitcorrelationfromheatmapstoclinicalmanifestationsofthediseaseneeds
+ caution,eventhoughitishighlydesirabletodetectthediseasefromheatmapsandlearned
+ featuresortouseheatmapsandlearnedfeaturestobetterunderstandthedisease.
+ TheintermediateactivationfeaturesatselectedlayersinresidualBlock1ofResNet-50
+ areshowninFigure10.AdiagramofthemainlayersinBlock1isshowninFigure10a,
+ whichhastwobranches(i.e.,shortcutbranchandmainbranch)andrepresentsthekey
+ innovationinResNet-50,whichallowsactivationstobypassoneormorelayers.Here
+ “bn_conv1”standsfor“batchnormalizationforconvolutionlayer1”. Thesamethree
+ source imageswerepassedtothemodel (Figure10b), andFigure10cshowssample
+ extractedfeaturesatthefirstconvolutionlayer“conv1”,followedbybatchnormalization
+ (Bn_conv,Figure10d),Max_pooling(Figure10e),Bn2a_brach2a(Figure10f),Bn2a_brach2b
+Appl. Sci. 2023, 13, 10270
+ 16 of 21
+ (Figure 10g), and the Block 1 activation layer “Add_1” (Figure 10h). Different features were
+ Next, we examined the impact of multi-round training (Rounds 1–5) on the Grad
+CAM heatmap predicted by ResNet-50 (Figure 9). Grad-CAM, short for Gradient
+weighted Class Activation Mapping, computed the gradients of the model’s class scores 
+with respect to the final convolutional layer’s feature maps and only kept features with 
+positive contributions. From the heatmap variations across Rounds 1–5, we could see the 
+progression of ResNet-50’s learning behavior by gradually including more diverse im
+ages. It was noted that the three images were all correctly predicted. Like the occlusion 
+sensitivity in Figure 8, the Grad-CAM heatmap of the normal image was clear in the lung 
+in all five rounds (the upper panels, Figure 9a–e), which was consistent with the final pre
+diction for the normal class. Considering the COVID-19 image, hotspots of Grad-CAM 
+were observed mainly in the middle and upper lungs. However, the intensity and location 
+of these hotspots varied from Round 1 to Round 5, and this variation did not show a reg
+ular pattern in this example. Thus, explicit correlation from heatmaps to clinical manifes
+tations of the disease needs caution, even though it is highly desirable to detect the disease 
+from heatmaps and learned features or to use heatmaps and learned features to better 
+understand the disease.  
+extracted from the input images, e.g., skeleton, lung tissue, texture, brightness, edges, etc.
+ As the layer went deeper, the features became less recognizable with refined scales. Note
+ that in each layer in Block 1, there were either 8 8 or 16 16 features, and only 2 2 was
+ shown here. In Max_pooling (Figure 10e), the dark color shows less activated features, and
+ the light color shows highly activated features. At the end layer of residual Block 1 (Add_1),
+ the processed features of the input images through the main and shortcut branches were
+ added, which appeared to bear more visual similarity to the input images than features in
+ the intermediate layers.
+ Appl. Sci. 2023, 13, x FOR PEER REVIEW 
+Figure 9. Variation of the Grad-CAM map with multi-round training of normal, COVID-19, and
+ pneumonia images predicted by ResNet-50 in (a) Round 1, (b) Round 2, (c) Round 3, (d) Round 4,
+ Figure 9. Variation of the Grad-CAM map with multi-round training of normal, COVID-19, and 
+pneumonia images predicted by ResNet-50 in (a) Round 1, (b) Round 2, (c) Round 3, (d) Round 4, 
+and (e) Round 5. 
+and (e) Round 5.
+ 17 of 22 
+The intermediate activation features at selected layers in residual Block 1 of ResNet
+50 are shown in Figure 10. A diagram of the main layers in Block 1 is shown in Figure 10a, 
+which has two branches (i.e., shortcut branch and main branch) and represents the key 
+innovation in ResNet-50, which allows activations to bypass one or more layers. Here 
+“bn_conv1” stands for “batch normalization for convolution layer 1”. The same three 
+source images were passed to the model (Figure 10b), and Figure 10c shows sample ex
+tracted features at the first convolution layer “conv1”, followed by batch normalization 
+(Bn_conv, Figure 10d), Max_pooling (Figure 10e), Bn2a_brach2a (Figure 10f), 
+Bn2a_brach2b (Figure 10g), and the Block 1 activation layer “Add_1” (Figure 10h). Differ
+ent features were extracted from the input images, e.g., skeleton, lung tissue, texture, 
+brightness, edges, etc. As the layer went deeper, the features became less recognizable 
+with refined scales. Note that in each layer in Block 1, there were either 8 × 8 or 16 × 16 
+features, and only 2 × 2 was shown here. In Max_pooling (Figure 10e), the dark color 
+shows less activated features, and the light color shows highly activated features. At the 
+end layer of residual Block 1 (Add_1), the processed features of the input images through 
+the main and shortcut branches were added, which appeared to bear more visual similar
+ity to the input images than features in the intermediate layers.  
+Figure10. Intermediateactivation features in Block 1 of ResNet-50inRound5forthreesampleimages:
+ (a) Block 1 diagram of ResNet-50 architecture, (b) inputs, (c) Conv_1, (d) Bn_conv1, (e) Max_pooling,
+ Figure 10. Intermediate activation features in Block 1 of ResNet-50 in Round 5 for three sample 
+images: (a) Block 1 diagram of ResNet-50 architecture, (b) inputs, (c) Conv_1, (d) Bn_conv1, (e) 
+Max_pooling, (f) Bn2a_branch2a, (g) Bn2a_branch2b, and (h) Add_1. 
+(f) Bn2a_branch2a, (g) Bn2a_branch2b, and (h) Add_1.
+ 4. Discussion 
+4.1. Model Selection 
+Among the four models considered herein (AlexNet, ResNet-50, MobileNet, and 
+VGG-19), all models gave satisfactory classification performance in Round 5 on the three 
+databases (91.9–99.0%). Thus, these four models are all good candidates for developing 
+AI-assisted COVID-19 diagnostic systems, as also suggested by many previous studies. 
+Appl. Sci. 2023, 13, 10270
+ 17 of 21
+ 4. Discussion
+ 4.1. Model Selection
+ Among the four models considered herein (AlexNet, ResNet-50, MobileNet, and
+ VGG-19), all models gave satisfactory classification performance in Round 5 on the three
+ databases (91.9–99.0%). Thus, these four models are all good candidates for developing
+ AI-assisted COVID-19 diagnostic systems, as also suggested by many previous studies.
+ Amongthem, ResNet-50 consistently had higher overall performance than other networks
+ across the fivetraining stages and four levels of testing. It also outperformed other networks
+ in learning new features when progressively exposed to more diverse training images, as
+ evidenced by the more upper-left skewed ROC curves in Figure 5 when compared to other
+ models and the quickly improved ROC curves across Rounds 1–5 in Figure 6.
+ VGG-19showedthelowest performance in this study. However, it still had a classifica
+tion accuracy of 95.0% on the first database (Level 1), 93.5% on the second database (Level
+ 2), and 91.9% on the third database (Level 4). It performed poorly on the outlier images
+ collected from the first and second databases, even after being trained on 50% of them.
+ The classification accuracy in Round 5 was 73.6%, compared to 83.1–86.8% achieved using
+ other networks. Considering its persistent underperformance in five rounds of training
+ and four levels of testing, we recommended ResNet-50 or MobileNet over VGG-19 for the
+ future development of automatic diagnostic systems using X-ray images. MobileNet was
+ recommended because of its simpler architecture (thus fewer computational requirements),
+ overall satisfactory classification accuracy, robust performance, and good learnability.
+ 4.2. Dataset Effects
+ In this study, three datasets of X-ray images for normal, COVID-19, and pneumonia
+ were utilized. We demonstrated that, when using the same datasets for training and testing,
+ high classification accuracy (98.1 1.6%) and sensitivity (99.1 1.2%) were achieved even
+ for the testing images that had been set apart in a separate folder (Level 1), as shown
+ in Figure 2 and Table 2. Furthermore, even for an external dataset (Level 2), impressive
+ accuracy (97.2 1.5%) and sensitivity (98.6 1.0%) were achieved, indicating the high
+ quality of both datasets as well as the image resemblance between these two datasets.
+ The Level 3 dataset contained outlier images collected from the first and second
+ databases, which exhibited evident deformities (rotation, scaling, shifting, incompleteness)
+ and color variations. These images presumably came from data augmentations when the
+ database was small. In this study, we observed drastic declines in model performance when
+ tested on these outlier images—accuracy droppedfrom98.1%atLevel1to56.1%, sensitivity
+ from 99.1% to 36.3%, and precision from 98.1% to 47.8%. Note that CNN models in Round
+ 1 had not seen these outlier images yet, even though the outlier images were modified
+ from the training images. The drastic drop in performance indicated that features of the
+ outlier images were missing in Round-1-trained models, indicating that the traditional
+ data augmentation techniques would introduce extraneous features and undermine the
+ model development using chest X-rays. Even though data argumentation techniques have
+ been useful when the COVID-19 images were limited, training unmodified images is
+ recommended when COVID-19 X-rays become more available.
+ The Level 4 dataset in this study comprised external images that displayed certain
+ disparities from the training images, as evidenced by the moderately reduced classification
+ metrics from Level 1 to Level 4 (i.e., accuracy from 98.1% to 85.6%, sensitivity from 99.1% to
+ 66.8%, Figure 2 and Table 2). Even within the same modality (X-ray), variations could arise
+ due to differences in equipment and operational procedures. The heterogeneity in image
+ quality could introduce potential biases in model training and superfluous misclassifica
+tions in testing [55]. In addition, images are susceptible to mislabeling and corruption. Thus,
+ standardization and validation of image databases and repositories, which are lacking in
+ most public COVID-19 X-ray datasets, are needed to avoid future complications.
+ The training data were imbalanced in this study. The baseline training images (11,538)
+ include 7791 for normal, 2717 for COVID-19, and 1030 for pneumonia. This might ex
+Appl. Sci. 2023, 13, 10270
+ 18 of 21
+ plain the high misclassification rates in normal vs. COVID-19 and normal vs. pneumonia
+ (Figure 7). By contrast, the classification for COVID-19-pneumonia is much rarer. Thus,
+ adopting a training dataset with a balanced distribution among these three categories
+ mayfurther improve the model’s performance. It is also noted that COVID-19 has been
+ proven to be highly mutational, and existing datasets cannot fully account for the evolving
+ variants. This will increase the likelihood for a future COVID-19 patient to receive a false
+ negative diagnosis, which makes multi-round training imperative to ensure the accuracy
+ of AI-assisted COVID-19 diagnostic systems.
+ 4.3. Re-Training Effects on Model Performance and Result Interpretability
+ In this study, multi-round training not only improved the model performance on
+ test images with diminishing similarity, but also demonstrated the benefits of evaluating
+ the learnability and performance robustness among different models. It is cautioned that
+ retraining with extended data did not always improve model performance, and relevant
+ images with high quality are needed, as shown in Tables 3–6. The progression in learning
+ behaviors could be observed through the changes in extracted activation features, ROC
+ curves, or heatmaps across different stages. The observation that the ROC curves of ResNet
+50 were persistently more skewed to the upper-left corner was closely correlated with its
+ superiority over the other three models at multiple stages (Figure 5 and Tables 2–6). Con
+versely, VGG-19 consistently presented a lower ROC curve in every round and concurrently
+ exhibited a slower rate of improvement (Figure 5 and Tables 2–6). By tracking alterations
+ in activation features and heatmaps (Figures 8–10), we can gain deeper insights into the
+ network’s perception of the disease (i.e., the predominant features for classification) and
+ even enhance our understanding of the disease through features/heatmaps filtered by
+ the CNNmodels. It should be emphasized that, at least within the context of this study,
+ while a correlation between features/heatmaps and disease manifestation does exist, it
+ remains tenuous. Explicit application of model-learned features/heatmaps to explain the
+ classification is still impractical.
+ The weak heatmap-disease correlation can be seen in Figures 8 and 9, while the
+ irregularity in such correlations can be seen in the pneumonia case in Figure 9. A normal
+ X-ray image of the lungs will typically show clear, dark spaces with distinct edges that
+ represent healthy air-filled lung tissue [56,57]. There should be no signs of abnormal
+ densities or infiltrations that are indicative of infection or inflammation, as shown in the
+ upper panels of Figures 8 and 9. COVID-19 X-ray images may show patchy areas of opacity,
+ which indicate fluid buildup in the lungs [58,59]. Additionally, COVID-19 may cause a
+ condition called “ground-glass opacity”, which appears as a hazy, cloud-like pattern. In
+ Figures 8 and 9, patches of hotspots with intermediate to high intensity were also observed.
+ X-ray images of pneumonia also show infiltrations and white patches in the lungs [60], but
+ they mayappear in a morepatchy or lobar pattern, which is consistent with the large extent
+ of hotpots of occlusion intensity in the lower panels of Figure 8. Yet, similar observations
+ are not found in the pneumonia Grad-CAM heatmaps displayed in the lower panel of
+ Figure 9. This suggests that directly using heatmaps to elucidate classification outcomes
+ might not always be viable.
+ 5. Conclusions
+ Despite reported high accuracies, many previous CNN-based COVID-19 diagnostic
+ models relied on clinic-specific or limited datasets and were rarely tested with external
+ images. In our study, we trained four CNN models on incrementally expanded datasets
+ and assessed their performance using increasingly dissimilar images. By utilizing X-ray
+ images sourced from multiple centers, we evaluated the models’ capabilities in verification,
+ interpolation, and extrapolation. Compared to traditional single-phase training, our multi
+stage approach offered a comprehensive evaluation of the models’ learnability, robustness,
+ and interpretability of classification results.
+Appl. Sci. 2023, 13, 10270
+ 19 of 21
+ Author Contributions: Conceptualization, M.T., X.S. and J.X.; methodology, M.T., X.S. and J.X.;
+ software, M.T. and J.X.; validation, X.S. and J.X.; formal analysis, M.T., X.S. and J.X.; investigation,
+ M.T., X.S. and J.X.; data curation, M.T.; writing—original draft preparation, J.X.; writing—review and
+ editing, M.T. and X.S.; visualization, M.T. and J.X.; supervision, J.X. All authors have read and agreed
+ to the published version of the manuscript.
+ Funding: This research received no external funding.
+ Institutional Review Board Statement: Not applicable.
+ Informed Consent Statement: Not applicable.
+ Data Availability Statement: The data presented in this study are available upon request from the
+ corresponding author.
+ Acknowledgments: Amr Seifelnasr at UMass Lowell Biomedical Engineering is gratefully acknowl
+edged for editing and proofreading this manuscript.
+ Conflicts of Interest: The authors declare no conflict of interest.
+ References
+ 1.
+ 2.
+ 3.
+ 4.
+ 5.
+ 6.
+ 7.
+ 8.
+ 9.
+ Fusco, R.; Grassi, R.; Granata, V.; Setola, S.V.; Grassi, F.; Cozzi, D.; Pecori, B.; Izzo, F.; Petrillo, A. Artificial intelligence and
+ COVID-19 using chest CT scan and chest X-ray images: Machine learning and deep learning approaches for diagnosis and
+ treatment. J. Pers. Med. 2021, 11, 993. [CrossRef] [PubMed]
+ Mondal, M.R.H.; Bharati, S.; Podder, P. Ddiagnosis of COVID-19 using machine learning and deep learning: A review. Curr. Med.
+ Imaging 2021, 17, 1403–1418. [PubMed]
+ Islam, M.M.; Karray, F.; Alhajj, R.; Zeng, J. A review on deep learning techniques for the diagnosis of novel coronavirus
+ (COVID-19). IEEE Access 2021, 9, 30551–30572. [CrossRef] [PubMed]
+ MV, M.K.; Atalla, S.; Almuraqab, N.; Moonesar, I.A. Detection of COVID-19 using deep learning techniques and cost effectiveness
+ evaluation: A survey. Front. Artif. Intell. 2022, 5, 912022.
+ Awassa, L.; Jdey, I.; Dhahri, H.; Hcini, G.; Mahmood, A.; Othman, E.; Haneef, M. Study of different deep learning methods for
+ coronavirus (COVID-19) pandemic: Taxonomy, survey and insights. Sensors 2022, 22, 1890. [CrossRef] [PubMed]
+ Alsaaidah, B.; Al-Hadidi, M.d.R.; Al-Nsour, H.; Masadeh, R.; AlZubi, N. Ccomprehensive survey of machine learning systems for
+ COVID-19 detection. J. Imaging 2022, 8, 267. [CrossRef]
+ Alyasseri, Z.A.A.; Al-Betar, M.A.; Doush, I.A.; Awadallah, M.A.; Abasi, A.K.; Makhadmeh, S.N.; Alomari, O.A.; Abdulkareem, K.H.;
+ Adam, A.; Damasevicius, R.; et al. Review on COVID-19 diagnosis models based on machine learning and deep learning
+ approaches. Expert Syst. 2022, 39, e12759. [CrossRef]
+ Sinwar, D.; Dhaka, V.S.; Tesfaye, B.A.; Raghuwanshi, G.; Kumar, A.; Maakar, S.K.; Agrawal, S. Artificial intelligence and deep
+ learning assisted rapid diagnosis of COVID-19 from chest radiographical images: A survey. Contrast Media Mol. Imaging 2022,
+ 2022, 1306664. [CrossRef]
+ Bhatele, K.R.; Jha, A.; Tiwari, D.; Bhatele, M.; Sharma, S.; Mithora, M.R.; Singhal, S. COVID-19 detection: A systematic review of
+ machine and deep learning-based approaches utilizing chest X-rays and CT scans. Cognit. Comput. 2022, 1–38. [CrossRef]
+ 10. Costa, Y.M.G.; Silva, S.A., Jr.; Teixeira, L.O.; Pereira, R.M.; Bertolini, D.; Britto, A.S., Jr.; Oliveira, L.S.; Cavalcanti, G.D.C. COVID-19
+ detection on chest X-ray and CT scan: A review of the top-100 most cited papers. Sensors 2022, 22, 7303. [CrossRef]
+ 11. Khan,A.; Khan, S.H.; Saif, M.; Batool, A.; Sohail, A.; Waleed Khan, M. A survey of deep learning techniques for the analysis of
+ COVID-19 and their usability for detecting Omicron. J. Exp. Theor. Artif. Intell. 2023, 35, 1–43. [CrossRef]
+ 12. Gürsoy, E.; Kaya, Y. An overview of deep learning techniques for COVID-19 detection: Methods, challenges, and future works.
+ Multimed. Syst. 2023, 29, 1603–1627. [CrossRef] [PubMed]
+ 13. Rafique, Q.; Rehman, A.; Afghan, M.S.; Ahmad, H.M.; Zafar, I.; Fayyaz, K.; Ain, Q.; Rayan, R.A.; Al-Aidarous, K.M.;
+ Rashid, S.; et al. Reviewing methods of deep learning for diagnosing COVID-19, its variants and synergistic medicine combina
+tions. Comput. Biol. Med. 2023, 163, 107191. [CrossRef] [PubMed]
+ 14. Naseem,M.;Akhund,R.; Arshad, H.; Ibrahim, M.T. Eexploring the potential of artificial intelligence and machine learning to com
+bat COVID-19 and existing opportunities for LMIC: A scoping review. J. Prim. Care Community Health 2020, 11, 2150132720963634.
+ [CrossRef] [PubMed]
+ 15. Pan,F.; Li, L.; Liu, B.; Ye, T.; Li, L.; Liu, D.; Ding, Z.; Chen, G.; Liang, B.; Yang, L.; et al. A novel deep learning-based quantification
+ of serial chest computed tomography in Coronavirus Disease 2019 (COVID-19). Sci. Rep. 2021, 11, 417. [CrossRef] [PubMed]
+ 16. Yang, D.; Martinez, C.; Visuña, L.; Khandhar, H.; Bhatt, C.; Carretero, J. Detection and analysis of COVID-19 in medical images
+ using deep learning techniques. Sci. Rep. 2021, 11, 19638. [CrossRef]
+ 17. Zebin, T.; Rezvy, S. COVID-19 detection and disease progression visualization: Deep learning on chest X-rays for classification
+ and coarse localization. Appl. Intell. 2021, 51, 1010–1021. [CrossRef]
+ 18. Ibrahim, A.U.; Ozsoz, M.; Serte, S.; Al-Turjman, F.; Yakoi, P.S. Pneumonia classification using deep learning from chest X-ray
+ images during COVID-19. Cognit. Comput. 2021, 1–13. [CrossRef]
+Appl. Sci. 2023, 13, 10270
+ 20 of 21
+ 19. Jain, R.; Gupta, M.; Taneja, S.; Hemanth, D.J. Deep learning based detection and analysis of COVID-19 on chest X-ray images.
+ Appl. Intell. 2021, 51, 1690–1700. [CrossRef]
+ 20. El Asnaoui, K.; Chawki, Y. Using X-ray images and deep learning for automated detection of coronavirus disease. J. Biomol.
+ Struct. Dyn. 2021, 39, 3615–3626. [CrossRef] [PubMed]
+ 21. Karnati, M.; Seal, A.; Sahu, G.; Yazidi, A.; Krejcar, O. A novel multi-scale based deep convolutional neural network for detecting
+ COVID-19 from X-rays. Appl. Soft Comput. 2022, 125, 109109. [CrossRef] [PubMed]
+ 22. Vyas, S.; Seal, A. A comparative study of different feature extraction techniques for identifying COVID-19 patients using chest
+ X-rays images. In Proceedings of the 2020 International Conference on Decision Aid Sciences and Application (DASA), Sakheer,
+ Bahrain, 8–9 November 2020; pp. 209–213.
+ 23. Rehman, A.; Saba, T.; Tariq, U.; Ayesha, N. Deep learning-based COVID-19 detection using CT and X-ray images: Current
+ analytics and comparisons. IT Prof. 2021, 23, 63–68. [CrossRef] [PubMed]
+ 24. Afifi,A.; Hafsa, N.E.; Ali, M.A.S.; Alhumam, A.; Alsalman, S. An ensemble of global and local-attention based convolutional
+ neural networks for COVID-19 diagnosis on chest X-ray images. Symmetry 2021, 13, 113. [CrossRef]
+ 25. Alsharif, W.; Qurashi, A. Effectiveness of COVID-19 diagnosis and management tools: A review. Radiography 2021, 27, 682–687.
+ [CrossRef] [PubMed]
+ 26. Zouch, W.; Sagga, D.; Echtioui, A.; Khemakhem, R.; Ghorbel, M.; Mhiri, C.; Hamida, A.B. Detection of COVID-19 from CT and
+ chest X-ray images using deep learning models. Ann. Biomed. Eng. 2022, 50, 825–835. [CrossRef] [PubMed]
+ 27. Rajaraman, S.; Antani, S. Weakly labeled data augmentation for deep learning: A Study on COVID-19 detection in chest X-rays.
+ Diagnostics 2020, 10, 358. [CrossRef] [PubMed]
+ 28. Dubey, A.K.; Chabert, G.L.; Carriero, A.; Pasche, A.; Danna, P.S.C.; Agarwal, S.; Mohanty, L.; Nillmani; Sharma, N.; Yadav, S.; et al.
+ Eensemble deep learning derived from transfer learning for classification of COVID-19 patients on hybrid deep-learning-based
+ lung segmentation: A data augmentation and balancing framework. Diagnostics 2023, 13, 1954. [CrossRef]
+ 29. Albahli, S.; Albattah, W. Deep transfer learning for COVID-19 prediction: Case study for limited data problems. Curr. Med.
+ Imaging 2021, 17, 973–980. [CrossRef]
+ 30. Garg, A.; Salehi, S.; Rocca, M.L.; Garner, R.; Duncan, D. Efficient and visualizable convolutional neural networks for COVID-19
+ classification using Chest CT. Expert Syst. Appl. 2022, 195, 116540. [CrossRef]
+ 31. Chouat, I.; Echtioui, A.; Khemakhem, R.; Zouch, W.; Ghorbel, M.; Hamida, A.B. COVID-19 detection in CT and CXR images
+ using deep learning models. Biogerontology 2022, 23, 65–84. [CrossRef]
+ 32. Ko,H.; Chung, H.; Kang, W.S.; Kim, K.W.; Shin, Y.; Kang, S.J.; Lee, J.H.; Kim, Y.J.; Kim, N.Y.; Jung, H.; et al. COVID-19 pneumonia
+ diagnosis using a simple 2D deep learning framework with a single chest CT image: Model development and validation. J. Med.
+ Internet Res. 2020, 22, e19569. [CrossRef] [PubMed]
+ 33. Srinivas, K.; Gagana Sri, R.; Pravallika, K.; Nishitha, K.; Polamuri, S.R. COVID-19 prediction based on hybrid Inception V3 with
+ VGG16using chest X-ray images. Multimed. Tools Appl. 2023, 1–18. [CrossRef] [PubMed]
+ 34. Wang,W.;Liu, S.; Xu, H.; Deng, L. COVIDX-LwNet: A lightweight network ensemble model for the detection of COVID-19 based
+ on chest X-ray images. Sensors 2022, 22, 8578. [CrossRef] [PubMed]
+ 35. Karar, M.E.; Hemdan, E.E.; Shouman, M.A. Cascaded deep learning classifiers for computer-aided diagnosis of COVID-19 and
+ pneumonia diseases in X-ray scans. Complex Intell. Syst. 2021, 7, 235–247. [CrossRef]
+ 36. Kumar, S.; Shastri, S.; Mahajan, S.; Singh, K.; Gupta, S.; Rani, R.; Mohan, N.; Mansotra, V. LiteCovidNet: A lightweight deep
+ neural network model for detection of COVID-19 using X-ray images. Int. J. Imaging Syst. Technol. 2022, 32, 1464–1480. [CrossRef]
+ 37. Link, J.; Perst, T.; Stoeve, M.; Eskofier, B.M. Wearable sensors for activity recognition in ultimate frisbee using convolutional
+ neural networks and transfer learning. Sensors 2022, 22, 2560. [CrossRef]
+ 38. Valverde, J.M.; Imani, V.; Abdollahzadeh, A.; De Feo, R.; Prakash, M.; Ciszek, R.; Tohka, J. Transfer learning in magnetic resonance
+ brain imaging: A systematic review. J. Imaging 2021, 7, 66. [CrossRef]
+ 39. Ayana, G.; Dese, K.; Choe, S.W. Ttransfer learning in breast cancer diagnoses via ultrasound imaging. Cancers 2021, 13, 738.
+ [CrossRef]
+ 40. Gao,Y.; Cui, Y. Deep transfer learning for reducing health care disparities arising from biomedical data inequality. Nat. Commun.
+ 2020, 11, 5131. [CrossRef]
+ 41. Mozaffari, J.; Amirkhani, A.; Shokouhi, S.B. A survey on deep learning models for detection of COVID-19. Neural Comput. Appl.
+ 2023, 35, 16945–16973. [CrossRef]
+ 42. Agnihotri, A.; Kohli, N. Challenges, opportunities, and advances related to COVID-19 classification based on deep learning.
+ Data Sci. Manag. 2023, 6, 98–109. [CrossRef]
+ 43. Talaat, M.; Xi, J.; Tan, K.; Si, X.A.; Xi, J. Convolutional neural network classification of exhaled aerosol images for diagnosis of
+ obstructive respiratory diseases. J. Nanotheranostics 2023, 4, 228–247. [CrossRef]
+ 44. Talaat, M.; Si, X.; Xi, J. Datasets of simulated exhaled aerosol images from normal and diseased lungs with multi-level similarities
+ for neural network training/testing and continuous learning. Data 2023, 8, 126. [CrossRef]
+ 45. Maray, N.; Ngu, A.H.; Ni, J.; Debnath, M.; Wang, L. Transfer learning on small datasets for improved fall detection. Sensors 2023,
+ 23, 1105. [CrossRef]
+ 46. Liu, T.; Siegel, E.; Shen, D. Deep learning and medical image analysis for COVID-19 diagnosis and prediction. Annu. Rev. Biomed.
+ Eng. 2022, 24, 179–201. [CrossRef] [PubMed]
+Appl. Sci. 2023, 13, 10270
+ 21 of 21
+ 47. Yu,C.S.; Chang, S.S.; Chang, T.H.; Wu, J.L.; Lin, Y.J.; Chien, H.F.; Chen, R.J. A COVID-19 pandemic artificial intelligence-based
+ system with deep learning forecasting and automatic statistical data acquisition: Development and implementation study. J. Med.
+ Internet Res. 2021, 23, e27806. [CrossRef]
+ 48. Banoei, M.M.; Rafiepoor, H.; Zendehdel, K.; Seyyedsalehi, M.S.; Nahvijou, A.; Allameh, F.; Amanpour, S. Unraveling complex
+ relationships between COVID-19 risk factors using machine learning based models for predicting mortality of hospitalized
+ patients and identification of high-risk group: A large retrospective study. Front. Med. 2023, 10, 1170331. [CrossRef] [PubMed]
+ 49. Sanaullah, A.R.; Das, A.; Das, A.; Kabir, M.A.; Shu, K. Applications of machine learning for COVID-19 misinformation: A
+ systematic review. Soc. Netw. Anal. Min. 2022, 12, 94. [CrossRef]
+ 50. Rahman,T.; Chowdhury, M.; Khandakar, A. COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks
+ Database. 2021. Available online: https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database (accessed
+ on 10 August 2023).
+ 51. Chowdhury, M.E.H.; Rahman, T.; Khandakar, A.; Mazhar, R.; Kadir, M.A.; Mahbub, Z.B.; Islam, K.R.; Khan, M.S.; Iqbal, A.;
+ Emadi, N.A.; et al. Can AI help in screening viral and COVID-19 pneumonia? IEEE Access 2020, 8, 132665–132676. [CrossRef]
+ 52. Rahman,T.; Khandakar, A.; Qiblawey, Y.; Tahir, A.; Kiranyaz, S.; Abul Kashem, S.B.; Islam, M.T.; Al Maadeed, S.; Zughaier, S.M.;
+ Khan, M.S.; et al. Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-ray images.
+ Comput. Biol. Med. 2021, 132, 104319. [CrossRef]
+ 53. Patel, P. Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://
+pneumonia case in Figure 9. A normal
+ X-ray image of the lungs will typically show clear, dark spaces with distinct edges that
+ represent healthy air-filled lung tissue [56,57]. There should be no signs of abnormal
+ densities or infiltrations that are indicative of infection or inflammation, as shown in the
+ upper panels of Figures 8 and 9. COVID-19 X-ray images may show patchy areas of opacity,
+ which indicate fluid buildup in the lungs [58,59]. Additionally, COVID-19 may cause a
+ condition called “ground-glass opacity”, which appears as a hazy, cloud-like pattern. In
+ Figures 8 and 9, patches of hotspots with intermediate to high intensity were also observed.
+ X-ray images of pneumonia also show infiltrations and white patches in the lungs [60], but
+ they mayappear in a morepatchy or lobar pattern, which is consistent with the large extent
+ of hotpots of occlusion intensity in the lower panels of Figure 8. Yet, similar observations
+ are not found in the pneumonia Grad-CAM heatmaps displayed in the lower panel of
+ Figure 9. This suggests that directly using heatmaps to elucidate classification outcomes
+ might not always be viable.
+ 5. Conclusions
+ Despite reported high accuracies, many previous CNN-based COVID-19 diagnostic
+ models relied on clinic-specific or limited datasets and were rarely tested with external
+ images. In our study, we trained four CNN models on incrementally expanded datasets
+ and assessed their performance using increasingly dissimilar images. By utilizing X-ray
+ images sourced from multiple centers, we evaluated the models’ capabilities in verification,
+ interpolation, and extrapolation. Compared to traditional single-phase training, our multi
+stage approach offered a comprehensive evaluation of the models’ learnability, robustness,
+ and interpretability of classification results.
+Appl. Sci. 2023, 13, 10270
+ 19 of 21
+ Author Contributions: Conceptualization, M.T., X.S. and J.X.; methodology, M.T., X.S. and J.X.;
+ software, M.T. and J.X.; validation, X.S. and J.X.; formal analysis, M.T., X.S. and J.X.; investigation,
+ M.T., X.S. and J.X.; data curation, M.T.; writing—original draft preparation, J.X.; writing—review and
+ editing, M.T. and X.S.; visualization, M.T. and J.X.; supervision, J.X. All authors have read and agreed
+ to the published version of the manuscript.
+ Funding: This research received no external funding.
+ Institutional Review Board Statement: Not applicable.
+ Informed Consent Statement: Not applicable.
+ Data Availability Statement: The data presented in this study are available upon request from the
+ corresponding author.
+ Acknowledgments: Amr Seifelnasr at UMass Lowell Biomedical Engineering is gratefully acknowl
+edged for editing and proofreading this manuscript.
+ Conflicts of Interest: The authors declare no conflict of interest.
+ References
+ 1.
+ 2.
+ 3.
+ 4.
+ 5.
+ 6.
+ 7.
+ 8.
+ 9.
+ Fusco, R.; Grassi, R.; Granata, V.; Setola, S.V.; Grassi, F.; Cozzi, D.; Pecori, B.; Izzo, F.; Petrillo, A. Artificial intelligence and
+ COVID-19 using chest CT scan and chest X-ray images: Machine learning and deep learning approaches for diagnosis and
+ treatment. J. Pers. Med. 2021, 11, 993. [CrossRef] [PubMed]
+ Mondal, M.R.H.; Bharati, S.; Podder, P. Ddiagnosis of COVID-19 using machine learning and deep learning: A review. Curr. Med.
+ Imaging 2021, 17, 1403–1418. [PubMed]
+ Islam, M.M.; Karray, F.; Alhajj, R.; Zeng, J. A review on deep learning techniques for the diagnosis of novel coronavirus
+ (COVID-19). IEEE Access 2021, 9, 30551–30572. [CrossRef] [PubMed]
+ MV, M.K.; Atalla, S.; Almuraqab, N.; Moonesar, I.A. Detection of COVID-19 using deep learning techniques and cost effectiveness
+ evaluation: A survey. Front. Artif. Intell. 2022, 5, 912022.
+ Awassa, L.; Jdey, I.; Dhahri, H.; Hcini, G.; Mahmood, A.; Othman, E.; Haneef, M. Study of different deep learning methods for
+ coronavirus (COVID-19) pandemic: Taxonomy, survey and insights. Sensors 2022, 22, 1890. [CrossRef] [PubMed]
+ Alsaaidah, B.; Al-Hadidi, M.d.R.; Al-Nsour, H.; Masadeh, R.; AlZubi, N. Ccomprehensive survey of machine learning systems for
+ COVID-19 detection. J. Imaging 2022, 8, 267. [CrossRef]
+ Alyasseri, Z.A.A.; Al-Betar, M.A.; Doush, I.A.; Awadallah, M.A.; Abasi, A.K.; Makhadmeh, S.N.; Alomari, O.A.; Abdulkareem, K.H.;
+ Adam, A.; Damasevicius, R.; et al. Review on COVID-19 diagnosis models based on machine learning and deep learning
+ approaches. Expert Syst. 2022, 39, e12759. [CrossRef]
+ Sinwar, D.; Dhaka, V.S.; Tesfaye, B.A.; Raghuwanshi, G.; Kumar, A.; Maakar, S.K.; Agrawal, S. Artificial intelligence and deep
+ learning assisted rapid diagnosis of COVID-19 from chest radiographical images: A survey. Contrast Media Mol. Imaging 2022,
+ 2022, 1306664. [CrossRef]
+ Bhatele, K.R.; Jha, A.; Tiwari, D.; Bhatele, M.; Sharma, S.; Mithora, M.R.; Singhal, S. COVID-19 detection: A systematic review of
+ machine and deep learning-based approaches utilizing chest X-rays and CT scans. Cognit. Comput. 2022, 1–38. [CrossRef]
+ 10. Costa, Y.M.G.; Silva, S.A., Jr.; Teixeira, L.O.; Pereira, R.M.; Bertolini, D.; Britto, A.S., Jr.; Oliveira, L.S.; Cavalcanti, G.D.C. COVID-19
+ detection on chest X-ray and CT scan: A review of the top-100 most cited papers. Sensors 2022, 22, 7303. [CrossRef]
+ 11. Khan,A.; Khan, S.H.; Saif, M.; Batool, A.; Sohail, A.; Waleed Khan, M. A survey of deep learning techniques for the analysis of
+ COVID-19 and their usability for detecting Omicron. J. Exp. Theor. Artif. Intell. 2023, 35, 1–43. [CrossRef]
+ 12. Gürsoy, E.; Kaya, Y. An overview of deep learning techniques for COVID-19 detection: Methods, challenges, and future works.
+ Multimed. Syst. 2023, 29, 1603–1627. [CrossRef] [PubMed]
+ 13. Rafique, Q.; Rehman, A.; Afghan, M.S.; Ahmad, H.M.; Zafar, I.; Fayyaz, K.; Ain, Q.; Rayan, R.A.; Al-Aidarous, K.M.;
+ Rashid, S.; et al. Reviewing methods of deep learning for diagnosing COVID-19, its variants and synergistic medicine combina
+tions. Comput. Biol. Med. 2023, 163, 107191. [CrossRef] [PubMed]
+ 14. Naseem,M.;Akhund,R.; Arshad, H.; Ibrahim, M.T. Eexploring the potential of artificial intelligence and machine learning to com
+bat COVID-19 and existing opportunities for LMIC: A scoping review. J. Prim. Care Community Health 2020, 11, 2150132720963634.
+ [CrossRef] [PubMed]
+ 15. Pan,F.; Li, L.; Liu, B.; Ye, T.; Li, L.; Liu, D.; Ding, Z.; Chen, G.; Liang, B.; Yang, L.; et al. A novel deep learning-based quantification
+ of serial chest computed tomography in Coronavirus Disease 2019 (COVID-19). Sci. Rep. 2021, 11, 417. [CrossRef] [PubMed]
+ 16. Yang, D.; Martinez, C.; Visuña, L.; Khandhar, H.; Bhatt, C.; Carretero, J. Detection and analysis of COVID-19 in medical images
+ using deep learning techniques. Sci. Rep. 2021, 11, 19638. [CrossRef]
+ 17. Zebin, T.; Rezvy, S. COVID-19 detection and disease progression visualization: Deep learning on chest X-rays for classification
+ and coarse localization. Appl. Intell. 2021, 51, 1010–1021. [CrossRef]
+ 18. Ibrahim, A.U.; Ozsoz, M.; Serte, S.; Al-Turjman, F.; Yakoi, P.S. Pneumonia classification using deep learning from chest X-ray
+ images during COVID-19. Cognit. Comput. 2021, 1–13. [CrossRef]
+Appl. Sci. 2023, 13, 10270
+ 20 of 21
+ 19. Jain, R.; Gupta, M.; Taneja, S.; Hemanth, D.J. Deep learning based detection and analysis of COVID-19 on chest X-ray images.
+ Appl. Intell. 2021, 51, 1690–1700. [CrossRef]
+ 20. El Asnaoui, K.; Chawki, Y. Using X-ray images and deep learning for automated detection of coronavirus disease. J. Biomol.
+ Struct. Dyn. 2021, 39, 3615–3626. [CrossRef] [PubMed]
+ 21. Karnati, M.; Seal, A.; Sahu, G.; Yazidi, A.; Krejcar, O. A novel multi-scale based deep convolutional neural network for detecting
+ COVID-19 from X-rays. Appl. Soft Comput. 2022, 125, 109109. [CrossRef] [PubMed]
+ 22. Vyas, S.; Seal, A. A comparative study of different feature extraction techniques for identifying COVID-19 patients using chest
+ X-rays images. In Proceedings of the 2020 International Conference on Decision Aid Sciences and Application (DASA), Sakheer,
+ Bahrain, 8–9 November 2020; pp. 209–213.
+ 23. Rehman, A.; Saba, T.; Tariq, U.; Ayesha, N. Deep learning-based COVID-19 detection using CT and X-ray images: Current
+ analytics and comparisons. IT Prof. 2021, 23, 63–68. [CrossRef] [PubMed]
+ 24. Afifi,A.; Hafsa, N.E.; Ali, M.A.S.; Alhumam, A.; Alsalman, S. An ensemble of global and local-attention based convolutional
+ neural networks for COVID-19 diagnosis on chest X-ray images. Symmetry 2021, 13, 113. [CrossRef]
+ 25. Alsharif, W.; Qurashi, A. Effectiveness of COVID-19 diagnosis and management tools: A review. Radiography 2021, 27, 682–687.
+ [CrossRef] [PubMed]
+ 26. Zouch, W.; Sagga, D.; Echtioui, A.; Khemakhem, R.; Ghorbel, M.; Mhiri, C.; Hamida, A.B. Detection of COVID-19 from CT and
+ chest X-ray images using deep learning models. Ann. Biomed. Eng. 2022, 50, 825–835. [CrossRef] [PubMed]
+ 27. Rajaraman, S.; Antani, S. Weakly labeled data augmentation for deep learning: A Study on COVID-19 detection in chest X-rays.
+ Diagnostics 2020, 10, 358. [CrossRef] [PubMed]
+ 28. Dubey, A.K.; Chabert, G.L.; Carriero, A.; Pasche, A.; Danna, P.S.C.; Agarwal, S.; Mohanty, L.; Nillmani; Sharma, N.; Yadav, S.; et al.
+ Eensemble deep learning derived from transfer learning for classification of COVID-19 patients on hybrid deep-learning-based
+ lung segmentation: A data augmentation and balancing framework. Diagnostics 2023, 13, 1954. [CrossRef]
+ 29. Albahli, S.; Albattah, W. Deep transfer learning for COVID-19 prediction: Case study for limited data problems. Curr. Med.
+ Imaging 2021, 17, 973–980. [CrossRef]
+ 30. Garg, A.; Salehi, S.; Rocca, M.L.; Garner, R.; Duncan, D. Efficient and visualizable convolutional neural networks for COVID-19
+ classification using Chest CT. Expert Syst. Appl. 2022, 195, 116540. [CrossRef]
+ 31. Chouat, I.; Echtioui, A.; Khemakhem, R.; Zouch, W.; Ghorbel, M.; Hamida, A.B. COVID-19 detection in CT and CXR images
+ using deep learning models. Biogerontology 2022, 23, 65–84. [CrossRef]
+ 32. Ko,H.; Chung, H.; Kang, W.S.; Kim, K.W.; Shin, Y.; Kang, S.J.; Lee, J.H.; Kim, Y.J.; Kim, N.Y.; Jung, H.; et al. COVID-19 pneumonia
+ diagnosis using a simple 2D deep learning framework with a single chest CT image: Model development and validation. J. Med.
+ Internet Res. 2020, 22, e19569. [CrossRef] [PubMed]
+ 33. Srinivas, K.; Gagana Sri, R.; Pravallika, K.; Nishitha, K.; Polamuri, S.R. COVID-19 prediction based on hybrid Inception V3 with
+ VGG16using chest X-ray images. Multimed. Tools Appl. 2023, 1–18. [CrossRef] [PubMed]
+ 34. Wang,W.;Liu, S.; Xu, H.; Deng, L. COVIDX-LwNet: A lightweight network ensemble model for the detection of COVID-19 based
+ on chest X-ray images. Sensors 2022, 22, 8578. [CrossRef] [PubMed]
+ 35. Karar, M.E.; Hemdan, E.E.; Shouman, M.A. Cascaded deep learning classifiers for computer-aided diagnosis of COVID-19 and
+ pneumonia diseases in X-ray scans. Complex Intell. Syst. 2021, 7, 235–247. [CrossRef]
+ 36. Kumar, S.; Shastri, S.; Mahajan, S.; Singh, K.; Gupta, S.; Rani, R.; Mohan, N.; Mansotra, V. LiteCovidNet: A lightweight deep
+ neural network model for detection of COVID-19 using X-ray images. Int. J. Imaging Syst. Technol. 2022, 32, 1464–1480. [CrossRef]
+ 37. Link, J.; Perst, T.; Stoeve, M.; Eskofier, B.M. Wearable sensors for activity recognition in ultimate frisbee using convolutional
+ neural networks and transfer learning. Sensors 2022, 22, 2560. [CrossRef]
+ 38. Valverde, J.M.; Imani, V.; Abdollahzadeh, A.; De Feo, R.; Prakash, M.; Ciszek, R.; Tohka, J. Transfer learning in magnetic resonance
+ brain imaging: A systematic review. J. Imaging 2021, 7, 66. [CrossRef]
+ 39. Ayana, G.; Dese, K.; Choe, S.W. Ttransfer learning in breast cancer diagnoses via ultrasound imaging. Cancers 2021, 13, 738.
+ [CrossRef]
+ 40. Gao,Y.; Cui, Y. Deep transfer learning for reducing health care disparities arising from biomedical data inequality. Nat. Commun.
+ 2020, 11, 5131. [CrossRef]
+ 41. Mozaffari, J.; Amirkhani, A.; Shokouhi, S.B. A survey on deep learning models for detection of COVID-19. Neural Comput. Appl.
+ 2023, 35, 16945–16973. [CrossRef]
+ 42. Agnihotri, A.; Kohli, N. Challenges, opportunities, and advances related to COVID-19 classification based on deep learning.
+ Data Sci. Manag. 2023, 6, 98–109. [CrossRef]
+ 43. Talaat, M.; Xi, J.; Tan, K.; Si, X.A.; Xi, J. Convolutional neural network classification of exhaled aerosol images for diagnosis of
+ obstructive respiratory diseases. J. Nanotheranostics 2023, 4, 228–247. [CrossRef]
+ 44. Talaat, M.; Si, X.; Xi, J. Datasets of simulated exhaled aerosol images from normal and diseased lungs with multi-level similarities
+ for neural network training/testing and continuous learning. Data 2023, 8, 126. [CrossRef]
+ 45. Maray, N.; Ngu, A.H.; Ni, J.; Debnath, M.; Wang, L. Transfer learning on small datasets for improved fall detection. Sensors 2023,
+ 23, 1105. [CrossRef]
+ 46. Liu, T.; Siegel, E.; Shen, D. Deep learning and medical image analysis for COVID-19 diagnosis and prediction. Annu. Rev. Biomed.
+ Eng. 2022, 24, 179–201. [CrossRef] [PubMed]
+Appl. Sci. 2023, 13, 10270
+ 21 of 21
+ 47. Yu,C.S.; Chang, S.S.; Chang, T.H.; Wu, J.L.; Lin, Y.J.; Chien, H.F.; Chen, R.J. A COVID-19 pandemic artificial intelligence-based
+ system with deep learning forecasting and automatic statistical data acquisition: Development and implementation study. J. Med.
+ Internet Res. 2021, 23, e27806. [CrossRef]
+ 48. Banoei, M.M.; Rafiepoor, H.; Zendehdel, K.; Seyyedsalehi, M.S.; Nahvijou, A.; Allameh, F.; Amanpour, S. Unraveling complex
+ relationships between COVID-19 risk factors using machine learning based models for predicting mortality of hospitalized
+ patients and identification of high-risk group: A large retrospective study. Front. Med. 2023, 10, 1170331. [CrossRef] [PubMed]
+ 49. Sanaullah, A.R.; Das, A.; Das, A.; Kabir, M.A.; Shu, K. Applications of machine learning for COVID-19 misinformation: A
+ systematic review. Soc. Netw. Anal. Min. 2022, 12, 94. [CrossRef]
+ 50. Rahman,T.; Chowdhury, M.; Khandakar, A. COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks
+ Database. 2021. Available online: https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database (accessed
+ on 10 August 2023).
+ 51. Chowdhury, M.E.H.; Rahman, T.; Khandakar, A.; Mazhar, R.; Kadir, M.A.; Mahbub, Z.B.; Islam, K.R.; Khan, M.S.; Iqbal, A.;
+ Emadi, N.A.; et al. Can AI help in screening viral and COVID-19 pneumonia? IEEE Access 2020, 8, 132665–132676. [CrossRef]
+ 52. Rahman,T.; Khandakar, A.; Qiblawey, Y.; Tahir, A.; Kiranyaz, S.; Abul Kashem, S.B.; Islam, M.T.; Al Maadeed, S.; Zughaier, S.M.;
+ Khan, M.S.; et al. Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-ray images.
+ Comput. Biol. Med. 2021, 132, 104319. [CrossRef]
+ 53. Patel, P. Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://
+
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://
+
+ Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https:// Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https:// Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https:// Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https:// Patients. 2022. Available online: https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia (accessed on
+ 10 August 2023).
+ 54. JTIPTJ. Chest X-ray (Pneumonia, COVID-19,Tuberculosis). 2021. Available online: https://

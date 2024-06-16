@@ -1,0 +1,2765 @@
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ 393
+ Solve the Puzzle of Instance Segmentation in
+ Videos: A Weakly Supervised Framework
+ With Spatio-Temporal Collaboration
+ Liqi Yan
+ , Member, IEEE,QifanWang
+ , Siqi Ma, Jingang Wang, and Changbin Yu, Senior Member, IEEE
+ Abstract—Instance segmentation in videos, which aims to
+ segment and track multiple objects in video frames, has garnered
+ a flurry of research attention in recent years. In this paper,
+ we present a novel weakly supervised framework with Spatio
+Temporal Collaboration for instance Segmentation in videos,
+ namely STC-Seg. Concretely, STC-Seg demonstrates four con
+tributions. First, we leverage the complementary representa
+tions from unsupervised depth estimation and optical flow to
+ produce effective pseudo-labels for training deep networks and
+ predicting high-quality instance masks. Second, to enhance the
+ mask generation, we devise a puzzle loss, which enables end
+to-end training using box-level annotations. Third, our track
+ing module jointly utilizes bounding-box diagonal points with
+ spatio-temporal discrepancy to model movements, which largely
+ improves the robustness to different object appearances. Finally,
+ our framework is flexible and enables image-level instance
+ segmentation methods to operate the video-level task. We conduct
+ an extensive set of experiments on the KITTI MOTS and
+ YT-VIS datasets. Experimental results demonstrate that our
+ method achieves strong performance and even outperforms fully
+ supervised TrackR-CNN and MaskTrack R-CNN. We believe that
+ STC-Seg can be a valuable addition to the community, as it
+ reflects the tip of an iceberg about the innovative opportunities
+ in the weakly supervised paradigm for instance segmentation in
+ videos.
+ Index Terms—Video instance segmentation, weakly supervised
+ learning, multi-object tracking and segmentation.
+ Manuscript received 31 May 2022; revised 14 August 2022;
+ accepted 24 August 2022. Date of publication 29 August 2022; date of
+ current version 6 January 2023. This work was supported in part by the
+ Shandong Provincial Natural Science Fund under Grant 2022HWYQ-081
+ and in part by the National Science Foundation of China Key Project under
+ Grant U21A20488. This article was recommended by Associate Editor
+ Z. Ding. (Corresponding author: Changbin Yu.)
+ Liqi Yan is with the Westlake Institute for Advanced Study, Fudan
+ University, Shanghai 200437, China, and also with the School of Engineering,
+ Westlake University, Hangzhou 310024, China (e-mail: yanliqi@westlake.
+ edu.cn).
+ Qifan Wang is with Meta AI, Menlo Park, CA 94025 USA (e-mail:
+ wqfcr@fb.com).
+ Siqi Ma is with the School of Engineering, Westlake University,
+ Hangzhou 310024, China (e-mail: masiqi@westlake.edu.cn).
+ Jingang Wang is with Meituan, Beijing 100102, China (e-mail:
+ wangjingang02@meituan.com).
+ Changbin Yu is with the College of Artificial Intelligence and Big Data for
+ Medical Science, Shandong First Medical University & Shandong Academy
+ of Medical Sciences, Jinan 250021, China, and also with the Institute
+ for Intelligent Robots, Fudan University, Shanghai 200437, China (e-mail:
+ yu_lab@sdfmu.edu.cn).
+ Color versions of one or more figures in this article are available at
+ https://doi.org/10.1109/TCSVT.2022.3202574.
+ Digital Object Identifier 10.1109/TCSVT.2022.3202574
+ I. INTRODUCTION
+ THEimportanceoftheweaklysupervised paradigmcannot
+ be overstated, as it permeates through every corner of
+ recent advances in computer vision [1], [2], [3] to reduce the
+ annotation cost [1], [4]. In contrast to object segmentation [5],
+ [6], [7], [8], for instance segmentation in videos [9], [10], [11],
+ dense annotations need to depict accurate instance boundaries
+ as well as object temporal consistency across frames, which
+ is extremely labor-intensive to build datasets at scale required
+ to train a deep network. Although a large body of works
+ on weakly supervised image instance segmentation have been
+ discussed in literature [12], [13], [14], the exploration in video
+ domain remains largely unavailable until fairly recently [5],
+ [15], [16], [17], [18]. Therefore, understanding and improving
+ the weakly supervised methods of instance segmentation in
+ videos are the key enablers for future advances of this critical
+ task in computer vision.
+ Developing a weakly supervised framework is a challenging
+ task. One core objective is to devise reliable pseudo-labels
+ and loss function to perform effective supervision [12], [19].
+ To date, a popular convention is to use class labels produced
+ by Class Activation Map (CAM) or its variants [20], [21] to
+ supervise image instance segmentation [13], [14], [22], [23],
+ [24]. However, the CAM-based supervision signal may capture
+ spurious dependencies in training due to two daunting issues:
+ 1) It can only identify the most salient features on object
+ regions, which often lose the overall object structures, resulting
+ in partial instance segmentation [25], [26], [27]; 2) It cannot
+ separate overlapping instances of the same class and generally
+ lose the capacity to describe individual targets, when dealing
+ with multiple instances present in an image [22], [28], [29].
+ The challenge is further compounded by instance appearance
+ changes caused by occlusion or truncation [30], [31]. Thus,
+ though CAM is outstanding in semantic segmentation, it does
+ not perform well in instance segmentation. Under the circum
+stance, there is a necessity to explore novel weakly supervised
+ approaches with more effective pseudo-labels for video-level
+ instance segmentation.
+ Aside from the CAM-based family, a line of research
+ has attempted to tackle image instance segmentation with
+ box-level annotations [32], [33], [34], [35]. Albeit achieving
+ improvements over CAM-based solutions, they generally
+ have complicated training pipelines, which incur a large
+ 1051-8215 © 2022 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+ See https://www.ieee.org/publications/rights/index.html for more information.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+394
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 1. Working pipeline of STC-Seg. The pseudo-labels are generated from spatial and temporal signals, which capture the instance boundary with more
+ accurate edges. Our puzzle solver supervises mask predictions to assemble each sub-region mask together to match the shape of the target with box annotations.
+ computational budget and long supervision schedule.
+ To address this issue, a recent work, BoxInst [36] introduces
+ a simple yet effective mask loss for training, including a
+ projection term and an affinity term. The first term minimizes
+ the discrepancy between the horizontal and vertical projections
+ of the predicted mask and the ground-truth box. The second
+ term is to identify confident pixel pairs with the same label
+ to explore the instance boundary. With the same supervision
+ level, BoxInst achieves significant improvement over the prior
+ efforts using box annotations [37], [38], [39]. This successful
+ exploration highlights the importance of loss function to
+ train deep networks in a weakly supervised fashion for the
+ segmentation task.
+ On the basis of the preceding lessons, one could argue that
+ box-supervised instance segmentation in videos is feasible. In
+ view of the nature of video data, our conjecture is that one
+ can leverage the rich spatio-temporal information in video
+ to develop reliable pseudo-labels for enhancing the box-level
+ supervision. In particular, optical flow captures the temporal
+ motion among instances which ensures the same instances
+ have similar flow vectors (Fig. 1a), while depth estimation
+ provides the spatial relation between instance and background
+ (Fig. 1b). We leverage the complementary representation of
+ spatio-temporal signals to produce high-quality pseudo-label
+ to supervise instance segmentation in videos. To enable effec
+tive training with the proposed pseudo-labels, we propose
+ a novel puzzle loss that organizes learning in a manner
+ compatible with box annotations, including a boundary term
+ and a box term. The two terms collaboratively resolve the
+ puzzle of how to assemble suitable sub-region masks that
+ match the shape of the instance, facilitating the trained model
+ to be boundary sensitive for fine-grained prediction (Fig. 1c).
+ Furthermore, in contrast to previous efforts [10], [11], which
+ use simple matching algorithms for tracking, we introduce an
+ enhanced tracking module that tracks diagonal points across
+ frames and ensures spatio-temporal consistency for instance
+ movement. To establish the conjecture, our work essentially
+ delivers the following contributions:
+ • We develop a Spatio-Temporal Collaboration framework
+ for instance Segmentation (STC-Seg) in videos, which
+ leverages the complementary representations of depth
+ estimation and optical flow to produce high-quality
+ pseudo-labels for training the deep network.
+ • Wedesign an effective puzzle loss to assemble mask pre
+dictions on each sub-region together in a self-supervised
+ manner. A strong tracking module is implemented with
+ spatio-temporal discrepancy for robust object appearance
+ changes.
+ • The flexibility of our STC-Seg enables weakly supervised
+ instance segmentation and tracking methods to have the
+ capacity to train fully supervised segmentation methods.
+ • We conduct extensive experiments and demonstrate that
+ our method is competitive with the state-of-the-art sys
+tem [17] and outperforms fully supervised MaskTrack
+ R-CNN [11] and TrackR-CNN [10].
+ II. RELATED WORK
+ Although weakly supervised instance segmentation in
+ videos is relatively under-studied, this section summarizes
+ the recent advances in the related fields regarding weakly
+ supervised instance segmentation, box-supervised methods,
+ and segmenting in videos [14], [23], [24], [33], [36], [40].
+ A. Fully Supervised Instance Segmentation
+ In the past decade, various fully supervised image instance
+ segmentation methods have been proposed. These approaches
+ can generally be divided into two categories: two-stage and
+ single-stage approaches. Two-stage methods [41], [42], [43],
+ [44] typically generate multiple object proposals in the first
+ stage and predict masks in the second stage. While two-stage
+ methods achieve high accuracy with large computational
+ cost, single-stage approaches [45], [46], [47], [48], [49], [50]
+ employ predictions of bounding-boxes and instance masks at
+ the same time. For example, SipMask [49] proposes a novel
+ light-weight spatial preservation module that preserves the
+ spatial information within a bounding-box. BlendMask [50]
+ is based on the fully convolutional one-stage object detector
+ (FCOS) [51], incorporating rich instance-level information
+ with accurate dense pixel features. However, all these meth
+ods are built upon accurate human-labeled mask annotations,
+ which requires far more human annotators than box anno
+tations. In contrast, our method uses only box annotations
+ instead of mask annotations, and thus dramatically reduces
+ labeling efforts.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 395
+ B. Weakly-Supervised Instance Segmentation
+ Using class labels to extract masks from CAMs or sim
+ilar attention maps has gained popularity in training weakly
+ supervised instance segmentation models [14], [23], [40], [52].
+ However, CAM-based supervision is not intrinsically suitable
+ for the instance segmentation task as it cannot provide accu
+rate information regarding individual objects, which poten
+tially causes confusion in prediction [22], [28], [30], [31].
+ One closely related work is flowIRN [17], which uses the
+ f
+ low fields as the extra supervision signal to operate train
+ing. Our technique is conceptually distinct in three folds:
+ 1) flowIRN only uses flow field to generate pseudo-labels
+ and thus fails to fully exploit the spatio-temporal represen
+tations. In contrast, we leverage the collaborative power of
+ spatio-temporal collaboration to produce high-quality pseudo
+labels; 2) flowIRN trains different contributing modules
+ (i.e., CAM and optical flow) dis-jointly, resulting in an
+ ineffective and complicated training pipeline. We propose
+ a puzzle solver that organizes learning through the use of
+ our pseudo-labels with box annotations, enable a fully end
+to-end fashion; 3) flowIRN directly adopts exiting tracking
+ method [10], while our tracking module builds on a novel
+ diagonal-point-based approach. More comparison results will
+ be provided in the experiments. To address this issue, we aim
+ to explore the more effective pseudo-labels from spatio
+temporal collaboration for weak supervision.
+ C. Box-Supervised Instance Segmentation
+ Our work is also closely related to the box-supervised
+ instance segmentation methods. At the image level, SDI [12]
+ might be the first box-supervised instance segmentation
+ framework, which utilizes candidate proposals generated by
+ MCG [53] to operate segmentation. In the same vein,
+ a line of recent work [33], [37], [54], [55] formulates the
+ box-supervised instance segmentation by sampling the positive
+ and negative proposals based on the ROIs feature maps. How
+ever, using proposals for instance segmentation has redundant
+ representations because a mask is repeatedly encoded at each
+ foreground feature around ROIs. In contrast, our method is
+ proposal-free as we remove the need for proposal sampling
+ to supervise the mask learning. BoxInst [36] is one of the
+ works that is similar to ours. It uses a pairwise loss function
+ to operate training on low-level color features. However,
+ their pairwise loss works in an oversimplified manner that
+ encourages confident pixel neighbors to have similar mask
+ predictions, inevitably introducing noisy supervision. Different
+ from BoxInst, our method produces high-quality pseudo-labels
+ derived from high-level spatio-temporal priors for supervi
+sion. To organize learning, we devise a novel puzzle loss to
+ supervise our mask generation to capture accurate instance
+ boundaries with box annotations.
+ D. Video Segmentation
+ A series of fully supervised approaches have emerged for
+ segmentation in videos [9], [35], [45], [56], [57], [58], [59],
+ [60]. For instance, VIS [11] and MOTS [10] both extend
+ Mask R-CNN [41] from images to videos and simultaneously
+ segment and track all object instances in videos. To the best
+ of our knowledge, flowIRN [17] and BTRA [61] may be two
+ of the few that explore weakly supervised learning for the
+ video-level instance segmentation task. FlowIRN [17] trains
+ different contributing modules (i.e., CAM and optical flow)
+ dis-jointly and incurs additional dependencies, resulting in
+ a dense training pipeline. BTRA [61] only box to generate
+ pseudo-labels and thus fails to fully exploit the spatio-temporal
+ representations for the boundary supervision. To maximize
+ synergies for instance segmentation in videos, we propose a
+ weakly supervised spatio-temporal collaboration framework in
+ the paper. Unlike the aforementioned methods which overlook
+ the sub-task of tracking in videos, we implement a strong
+ tracking module to model instance movement across frames
+ by using diagonal points with spatio-temporal information.
+ Compared to the prior efforts [10], [11], [17], our tracking
+ module has a more robust tracking capacity.
+ E. Spatio-Temporal Collaboration
+ A bunch of previous works [4], [56], [62], [63], [64], [65],
+ [66], [67] explore spatio-temporal collaboration to assist visual
+ tasks. For example, P3D ResNet [67] mitigated limitations of
+ deep 3D CNN by devising a family of bottleneck building
+ blocks that leverages both spatial and temporal convolutional
+ f
+ ilters.
+ SC-RNN [63] simultaneously captures the spatial coher
+ence and the temporal evolution in spatio-temporal space.
+ ESE-FN [64] captures motion trajectory and amplitude in
+ spatio-temporal space using skeleton modality, which is effec
+tive in modeling elderly activities. However, these methods
+ embed spatio-temporal analysis into the entire model, where
+ the spatio-temporal modeling process is required during infer
+ence. In our method, the spatio-temporal collaboration is only
+ used as the supervision signal during training, but not needed
+ in the segmentation prediction.
+ III. STC-SEG APPROACH
+ A. Overall Framework
+ The overall framework of STC-Seg is shown in Fig. 2.
+ During training, the pseudo-labels are first generated with
+ spatio-temporal collaboration. The segmentation model is
+ then jointly learned based on the pseudo-labels and the box
+ labels/annotations via a novel puzzle solver. During inference,
+ we directly perform instance segmentation on input video data
+ without using any extra information (i.e., depth estimation or
+ optical flow). Essentially, our STC-Seg consists of three core
+ components: 1) the spatio-temporal pseudo-label generation,
+ which offers a supervision signal for our training; 2) the
+ puzzle solver, which organizes the training of video instance
+ segmentation models; and 3) the tracking module, which
+ enables robust tracking capacity. We present the details of each
+ component in the following sections.
+ B. Puzzle Solver With Spatio-Temporal Collaboration
+ 1) Pseudo-Label Generation: Most existing works [37],
+ [54], [55] rely solely on optical flow to generate pseudo
+label. In this work, we leverage both spatial and temporal
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+396
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 2. The overview of STC-Seg framework. During training, pseudo-labels from spatio-temporal collaboration and box labels from box annotation are
+ jointly fed into the puzzle solver to learn a unified instance segmentation network. During inference, the learned segmentation network is applied to every
+ frame, followed by a tracking module to perform robust object tracking. Dashed and solid paths are the pipelines for training and inference respectively.
+ signals in our pseudo-label generation pipeline to better cap
+ture rich boundary information and effectively distinguish the
+ foreground (the instance) from the background. In particular,
+ our method adopts spatial signal Ss obtained from depth
+ estimation [68], and temporal signal St obtained from optical
+ f
+ low [69].
+ As shown in Fig. 2, we directly employ depth estimation
+ xs ∈ Rh×w×1 and optical flow xt ∈ Rh×w×2 as the inputs for
+ our pseudo-label generation module. The above two inputs
+ keep the same resolution w×h with the input frame, in order
+ to build the pixel-to-pixel correspondence. Each signal x ∈
+ {xs, xt} is then fed into a mini network [19] to compute the
+ contextual similarity at each pixel location for obtaining the
+ spatial and temporal signals, respectively. Given a location
+ (i, j) on the input x, the contextual similarity score Si,j on
+ the corresponding signal S ∈{Ss, St} is computed as:
+ Si,j =
+ δ wk1,k2 
+· x(i+λ·k1),(j+λ·k2), xi,j
+ k1,k2
+ (1)
+ where k1,k2 ∈{−1,0,1}. w is the dilated kernel, and λ is the
+ dilation rate. δ(,)1 is the similarity measurement function. For
+ the obtained signals, we have Ss, St ∈ Rh×w×1.
+ To produce the pseudo-label M for training, we leverage the
+ complementary representations of the two signals by fusing
+ them together with a threshold filter:
+ M=(Ss −φs)∧(St −φt)
+ (2)
+ where φs,φt denote the filter factor to determine the salience
+ threshold of each signal on the foreground instances. However,
+ noises may reside on the pseudo-labels and segregate one
+ target instance into multiple sub-regions.
+ 2) Puzzle Solver: As mentioned above, directly using the
+ pseudo-labels without constraints may result in excessively
+ noisy supervision and suboptimal training outcomes. In com
+parison to fully supervised information, which can be labeled
+ pixel-by-pixel, solving the puzzle of predicting the imaginary
+ mask is difficult in the weakly supervised fashion. To address
+ 1δ xi,j, xi ,j = er· xi,j−xi ,j p.
+ this issue, we introduce a novel puzzle solver that orga
+nizes learning through the use of our pseudo-labels with box
+ annotations.
+ Our puzzle solver essentially designs a puzzle loss that oper
+ates supervision of mask prediction with two loss terms. The
+ f
+ irst one is Boundary term, which explores all the candidate
+ sub-regions of the target instances to depict their boundaries.
+ The second one is Box term, which ensures maximal positions
+ of the predicted mask boundaries can closely stay within the
+ ground truths. The two terms work collaboratively to solve the
+ puzzle of how to assemble suitable sub-region masks together
+ to match the shape of the instance (see Fig. 3). Our puzzle
+ solver is to jointly optimize both the boundary term Lbd and
+ box term Lbx with respect to the network parameters θ:
+ argmin
+ Lpz = argmin
+ θ
+ θ
+ (Lbd + Lbx)
+ (3)
+ Boundary term: With ground truths, fully supervised meth
+ods can use binary cross entropy (BCE) loss Lbce to supervise
+ the mask generation, which uses both positive samples (the
+ foreground) and negative samples (the background) in training.
+ However, as discussed in Section III-B.1, our pseudo-labels
+ are noisy references with unwanted inner negative samples
+ inside the object, which would introduce inevitable noises in
+ training. To address this issue, we modify Lbce by focus
+ing on learning positive examples to capture the instance
+ boundaries (Fig. 3c). Concretely, given a pixel location (i, j)
+ on the pseudo-labels M, its corresponding label mi,j can
+ be mi,j ∈ {0,1}, where 1 denotes the foreground instance
+ and 0 denotes the background. To learn the instance mask
+ generation, our boundary loss only operates learning of the
+ posterior probability P( ˜ mi,j|mi,j = 1) from positive samples,
+ where ˜ mi,j ∈{0,1} is the predicted mask at (i, j).Giventhe
+ input size w ×h, our boundary loss is given by:
+ Lbd =− 1
+ h ×w
+ w
+ j =1
+ h
+ i=1
+ mi,j log P( ˜ mi,j = 1)
+ (4)
+ At first glance, only using the positive sampling may not
+ work well in training. However, an important observation is
+ that our pseudo-labels allow the network to effectively learn
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 397
+ Fig. 3. Demonstration of puzzle solver. Our puzzle solver performs strong supervision with box annotations and pseudo labels. Albeit the corresponding
+ pseudo labels for one target generally include multiple sub-regions, i.e., sub-region 1-4 in (b), the boundary term and box term in our puzzle loss work
+ collaboratively to supervise the mask prediction for aligning the shape of the instance while being consistent with the ground truth box.
+ the dominant representations from the positive examples. With
+ additional box supervision, the boundary loss computation
+ effectively captures the instance boundaries, thus largely elim
+inating supervision noises.
+ Box term: To perform box-level supervision, BoxInst [36]
+ adopts dice loss [70], which computes the similarity distance
+ of the predicted bounding boxes and the ground truths. How
+ever, a prediction, which is larger or smaller than the ground
+ truth, may have a similar penalty in dice loss computation.
+ Thus, a model supervised by the dice loss tends to generate
+ overly saturated masks that go beyond the boxes. To address
+ this issue, we introduce a position penalty into dice loss Ldice
+ to penalize the model for generating a mask that exceeds the
+ box (as shown in Fig. 3d). This penalty term encourages the
+ mask boundary to align with the ground truth box:
+ N
+ 2
+ Ldice(p, g) =
+ N
+ i
+ i
+ p2
+ i + g2
+ i
+ Dice loss Ldice
+ N
+ pigi
+ i
+ +
+ [max(pi − gi,0)]2
+ N
+ i
+ g2
+ i
+ Position penalty
+ (5)
+ where pi ∈ (0,1) and gi ∈ {0,1} are the log-likelihood
+ scores of the prediction and the ground truth respectively. N is
+ the length of the input sequence. The position penalty can
+ be understood as the proportion of the predicted region that
+ exceeds the ground truth region. As shown in Eq. 5, it is clear
+ that there is no position penalty for those points within the
+ ground truth. The final box term can be written as:
+ Lbx( ˜ m, B) = Ldice(Projx( ˜ m),Projx(B))
+ +Ldice(Projy( ˜ m),Projy(B))
+ (6)
+ where ˜ m is the predicted instance mask. B is the corre
+sponding box annotations. Projx and Projy are the projec
+tion functions [36], which map ˜ m and B onto x-axis and
+ y-axis, respectively. It is worth mentioning that the new Lbx
+ effectively rectifies the expanded masks outside the box that
+ are introduced by the Lbd. In other words, the Lbd allows
+ the model to predict larger masks, while Lbx ensures the
+ model predicts precise masks that are consistent with the
+ ground truth boxes. Note that the segmentation generation
+ is independent of pseudo-label generation. The computational
+ cost only increases when calculating the losses, which has the
+ same computational complexity as the MSE loss. Therefore,
+ our method will not introduce additional computation cost.
+ Our method can also be applied to those tasks with noise
+ supervision, such as target segmentation tasks with inaccurate
+ box labeling or incorrect labels [71], [72], [73], [74]. For
+ the former cases, we can slightly modify the loss of box
+ term to assign a larger weight to the positive feedback of
+ the intersection area, while assigning the negative feedback
+ outside the intersection area a smaller weight. For the latter
+ cases, we can modify the loss of boundary term by assigning a
+ relatively large weight to the positive item and a small weight
+ to the negative item in the cross entropy. In this way, our loss
+ function is able to deal with more inaccurate box annotations
+ and label predictions. Intuitively, the classification task can
+ be regarded as a regression problem by taking the irrelevant
+ labels as the “background”, so that the regression boundary
+ can shrink inward on the feature plane until the accurate label
+ boundary is found.
+ C. Tracking Module
+ Existing methods [75], [76], [77] prioritize object position
+ modeling for tracking, which may cause confusion when two
+ objects are extremely occluded or overlapped as shown in
+ Fig. 2. To address this issue, we place a premium on both
+ object size and position modeling in our tracking module.
+ Moreover, the spatio-temporal changes on individual objects
+ should remain within a reasonable range, given the consistency
+ of video object movement across frames. In light of both
+ observations, we introduce a novel tracking module using
+ diagonal points with spatio-temporal discrepancy.
+ 1) Diagonal Points Tracking: To represent the object posi
+tion and size, we adopt diagonal points to model the object
+ movement by using the upper-left corner (x1, y1) and the
+ lower-right corner (x2, y2) of the bounding box. Similar to
+ almost tracking methodology [76], [78], we adopt a recursive
+ Kalman Filter and frame-by-frame data association to predict
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+398 IEEETRANSACTIONSONCIRCUITSANDSYSTEMSFORVIDEOTECHNOLOGY,VOL.33,NO.1, JANUARY2023
+ the future location for each trackedobject. Themovement
+ lt−1→t o of a trackedobject o in the tth frame is used to
+ predict the future location pt+1(lt o)= lt−1→t o +lt o of this
+ object at (t+1)th,where lt o is the locationofobject oand
+ lt−1→t o isgivenby:
+ lt−1→t
+ o =(xt
+ 1−xt−1
+ 1 ,yt
+ 1−yt−1
+ 1 ,xt
+ 2−xt−1
+ 2 ,yt
+ 2−yt−1
+ 2 ) (7)
+ Duringobject tracking,wemaintainadictionaryO≤t =
+ {ˆ o} ˆ Kof ˆ Ktrackedobjectsinformerframes.GivenKdetected
+ objectsOt+1={o}K in (t+1)th frame, our tracking is to
+ builda list of one-to-onematchingpairs ˆ o=ϕ(o) ∈O≤t
+ tominimize the Euclidean distance between ground truth
+ locations lt+1 o of eacho ∈Ot+1 and the predicted future
+ locations pt+1(lt
+ ϕ(o)):
+ argmin
+ ϕ Ot+1
+ <pt+1(lt
+ ϕ(o)),lt+1
+ o > (8)
+ 2)Bi-GreedyMatching:Conventionaltrackingmethodsare
+ generallyone-directional as theyperforma popular greedy
+ search, calledHungarianAlgorithm, tobuild thecorrespon
+dencesϕ fromtheprevious frame to the current one (e.g.,
+ JDE[79],DeepSORT[78],FairMot [80],CenterTrack[77]).
+ However,thepositionofthesameobjectinthepreviousframe
+ maynotalwaysbetheclosestonethatappearedinthecurrent
+ frame,which causes confusion in tracking. To address this
+ problem, somemethodsusepre-trainedCNNdescriptors to
+ distinguishobjects[11],[78],butcomputingfeaturestakestoo
+ muchtimeandtheobjectsaresometimesverysimilar.Thus,
+ weconsidermatchingfrombothdirections(i.e.,previous-to
+current andcurrent-to-previous) anddevelopabidirectional
+ greedymatchingtooutput thetrackingTϕasfollows(assum
+ingthatonlyDPisused):
+ Algorithm1Bi-GreedyMatching
+ Input:O≤t={ˆ o}G,Ot+1={o}K.
+ Output:Tϕ={(o,ϕ(o))}K forallo∈Ot+1
+ 1: T←∅
+ 2: Tϕ←∅
+ 3: forall ˆ o∈O≤t do
+ 4: o←argmin
+ o∈Ot+1
+ <pt+1(lt
+ ˆ o),lt+1 o >
+ 5: T←T∪(ˆ o,o)
+ 6: endfor
+ 7: forallo∈Ot+1do
+ 8: if any ˆ o,(ˆ o,o)∈T then
+ 9: ˆ o←argmin
+ ˆ o,(ˆ o,o)∈T
+ <pt+1(lt
+ ˆ o),lt+1 o >
+ 10: Tϕ←Tϕ∪(o,ˆ o)
+ 11: else
+ 12: Tϕ←Tϕ∪(o,Newˆ o)
+ 13: endif
+ 14: endfor
+ AsshowninAlgorithm1,ourproposedmatchingalgorithm
+ firstfinds thenearest instanceo∈Ot+1 inthecurrent frame
+ foreachprevioustrackedobject ˆ o∈O≤t.Theremayexisttwo
+ cases: (a)morethanonedifferentpreviousinstancemayhave
+ thesamenearestcurrent instanceo, thoseprevious instances
+ are collectedas candidate instances; (b) it is alsopossible
+ that somecurrent instancesarenotmarkedbyanyprevious
+ instances.Inthecase(a),forthiscurrentinstanceo,wefinally
+ getthematchedpreviousinstance ˆ obyfindingthenearestone
+ fromthosecandidateinstances. Inthecase(b), thosecurrent
+ instancesarejudgedasanewinstance.SinceG>Kinmost
+ cases, toruntraversalfistonO≤t isbetterthanOt+1because
+ it focusesonthematchedcurrent instanceso ∈Ot+1 rather
+ thanpreviousinstances thatarenot incurrent frame. Ineach
+ roundofmatching,inordertoavoidtheoccludedobjectsbeing
+ forgotten,weneed to re-match thenewlyemergedobjects.
+ Therefore,weadopt amatchingcascadealgorithm[78] that
+ givesprioritytomorefrequentlyappearingobjects toensure
+ thoseobjectsthatarebrieflyoccludedanddisappearedcanbe
+ re-identified.
+ 3)OccludedObjectMulti-StageMatching: Theoccluded
+ objectsoftengetalowconfidencelevelafterpassingthrough
+ thedetectionalgorithm.Theexistingalgorithmsonlysetasin
+gleconfidencelevel thresholdtodividethecorrectlydetected
+ targetandthewronglydetectedtarget.Thisapproachcauses
+ thetrackingofoccludedobjectstofail.Weintroduceamulti
+stagematchingmechanism, that istoset twolowerthresholds
+ ofconfidencescores,andtreat thedividedhigh-scoringdetec
+tiontargetsandlow-scoringdetectiontargetsdifferently,and
+ performtworoundsofmatchingrespectivelyin turn. In this
+ way,althoughtheconfidenceobtainedbytheoccludedobject
+ position is lower, it canstill besuccessfullymatched in the
+ secondroundofmatching.
+ 4)Spatio-TemporalDiscrepancy:Consideringthefact that
+ thespatio-temporalchangesonindividualobjectsshouldretain
+ areasonablerangeinvideos,weextendtheEq.8byadding
+ thespatio-temporaldiscrepancyfor tracking:
+ argmin
+ τ Ot+1
+ α1<pt+1(lt
+ ϕ(o)),lt+1
+ o >
+ +α2<Dt(lt
+ ϕ(o)),D(t+1)(lt+1
+ o )>
+ +α3<Ft(lt
+ ϕ(o)),F(t+1)(lt+1
+ o )> (9)
+ whereDt andFt denotesthedepthandopticalflowvaluesof
+ thediagonalpointsfor the trackedobjectoonthe tth frame.
+ α1,α2,α3 are the trade-offweights thatbalance these terms.
+ Thenewobjectiveessentiallyensures the trackedobjectsare
+ alignedwith the segmented instances among frames,while
+ at thesame timebeingconsistentwith their spatio-temporal
+ positions.Wedemonstrate the improvementsofour tracking
+ inSectionIV-F.
+ IV. EXPERIMENTS
+ A.Datasets
+ We evaluate STC-Seg on two benchmarks: KITTI
+ MOTS [10] andYT-VIS [11]. TheKITTIMOTScontains
+ 21 videos (12 for training and 9 for validation) focusing
+ on driving scenes. The YT-VIS contains 2,883 YouTube
+ video clipswith 131k object instances and 40 categories.
+ OnKITTIMOTS, themetricsareHOTA,sMOTSA,MOTSA,
+ andMOTSP from[75].OnYT-VIS, themetrics are:mAP
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ D. Implementation Details
+ 399
+ Fig. 4. The architecture of our mini network. We use the dilated convolution
+ layers to capture the spatial or temporal data difference between adjacent
+ pixels. The similarity measurement function δ(·,·) is implemented by a
+ residual module.
+ is the mean average precision for IoU between [0.5, 0.9],
+ AP@0.50 and AP@0.75 are average precision with IoU
+ threshold at 0.50 and 0.75, and AR@1 and AR@10 are
+ average recall for top 1 and 10 respectively.
+ B. Pseudo-Label Generation Network Architecture
+ In the pseudo-label generation of STC-Seg, unsupervised
+ Monodepth2 [68] and Upflow [69] are adopted for the depth
+ estimation and optical flow respectively. The depth and flow
+ outputs are fed into a mini network. The mini network is
+ composed of a 2D average pooling layer, dilated convolution
+ layers and a residual module, as shown in Fig. 4. In pre
+processing, we use a 2D average pooling layer to down-sample
+ the depth and the optical flow data. The kernel size and the
+ stride of the pooling layer are both set to 4 without padding.
+ After the 2D average pooling layer, dilated convolution is
+ applied since it enables networks to have larger receptive fields
+ with just a few layers. The dilation rate λ is set to 2 and the
+ kernel size is set to 3 in our experiments, so the padding size
+ is set to 2 to keep the output size equal to the input size.
+ The weight of the kernel is initialized as W =[wk1,k2
+ ]3×3,
+ where wk1,k2 
+∈{0,1}. After the dilated convolution layers,
+ the residual module subtracts the output of the pooling layer
+ from the output of the dilated convolution layers and applies an
+ exponential activation function. The final output of the residual
+ module can be written as δ(xi,j, xi ,j ) = er·||xi,j−xi ,j ||p in
+ Eq. 1, which represents the contextual similarity between
+ locations (i, j) and (i , j ) in the frame, where r is the
+ similarity factor. We use the Frobenius norm (p = 2) in this
+ contextual similarity calculation. The similarity factor r is set
+ to 0.5 in our experiments.
+ C. Main Network Architecture
+ Our segmentation network is crafted on CondInst [87] with
+ a few modifications. Following CondInst, we use the FCOS
+based network, which includes ResNet-50/101 backbones [88]
+ with FPN [89], a detection built on FCOS, and dynamic
+ mask heads. For the dynamic mask heads, we use three
+ convolution layers as in CondInst, but we increase the channels
+ from 8 to 16 as in [36], which results in better perfor
+mance with an affordable computational overhead. Without
+ any network parameter consumption, our tracking module
+ directly performs tracking over the output of the segmentation
+ network.
+ 1) Pseudo-Label Generation: To generate pseudo-labels,
+ unsupervised Monodepth2 [68] and Upflow [69] are adopted
+ for the depth estimation and optical flow respectively. The
+ Monodepth2 [68] is trained on the KITTI stereo dataset [90]
+ when we take experiments on KITTI MOTS. When using
+ the monocular sequences in KITTI stereo dataset for training,
+ we follow Zhou et al.’s [91] pre-processing to remove static
+ frames. This results in 39,810 monocular triplets (three tem
+porally adjacent frames) for training and 4,424 for validation.
+ We use a learning rate of 10−4 for the first 15 epochs
+ which is then dropped to 10−5 for the remainder. When
+ we take experiments on YT-VIS, the model is pre-trained
+ on NYU Depth dataset [92] with a learning rate 10−4.
+ Following [93], images are flipped horizontally with a 50%
+ chance, and randomly cropped and resized to 384 × 384 to
+ augment the data and maintain the aspect ratio across different
+ input images. Monodepth2 is finetuned on the YT-VIS with
+ a learning rate of 10−5 and an exponential decay rate of
+ β1 = 0.9,β2 = 0.999. The Upflow [69] is trained on KITTI
+ scene flow dataset [94] when we take experiments on KITTI
+ MOTS. KITTI scene flow dataset [94] consists of 28,058
+ image pairs (tth frame and (t − 1)th frame). Following [95],
+ the learning rate is set to 10−4 and the Adam optimizer is
+ used during training. When we take experiments on YT-VIS,
+ the Upflow [69] is pre-trained on FlyingThings [96] for 100k
+ iterations with a batch size of 12, then trained for 100k
+ iterations on FlyingThings3D [96] with a batch size of 6. The
+ learning rate of the above two stages is both set to 1.2×10−4.
+ The model is finetuned on YT-VIS for another 100k iteration
+ with a batch size of 6 and a learning rate of 10−4. Our mini
+ network includes 3 layers of dilated convolutions. For Eq.1,
+ the dilation rate λ is set to be 2 and the kernel size of dilation
+ convolution is set to be 3. The filter factors φs,φt are set to
+ be 0.3 and 0.4 respectively.
+ 2) STC-Seg Training and Inference: The STC-Seg is
+ implemented using PyTorch. It is trained with batch size
+ 8 using 4 NVIDIA GeForce GTX 2080 Ti GPUs (2 images
+ per GPU) with 16 workers. During training, the backbone
+ is pre-trained on ImageNet [97]. The newly added layers
+ are initialized as in FCOS [51]. Following CondInst, the
+ input images are resized to have a shorter side [640, 800]
+ and a longer side at a maximum of 1333. The same data
+ augmentation in CondInst [87] is used as well. For KITTI
+ MOTS, we remove 485 frames without any usable annotation
+ so there are 4510 frames left for training. For YTVIS, there
+ are 61341 frames used for training in total. Only left-right
+ f
+ lipping is used as the data augmentation during training.
+ Following CondInst [87], the output mask is up-sampled to
+ 1/4 resolution of the input image, and we only compute the
+ loss for top 64 mask proposals per image. For optimization,
+ we use a multi-step learning rate scheduler with a warm-up
+ strategy in the first epoch. In our multi-step learning rate
+ schedule, the base learning rate is set to be 10−4, which
+ starts to decay exponentially after a certain number of iter
+ations up to 2 × 10−5. In the warm-up epoch, the learning
+ rate is increased linearly from 0 to the base learning rate.
+ The base learning rate is set to be 10−4, which starts to
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+400
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ TABLE I
+ QUANTITATIVERESULTSON KITTIMOTSTESTSET. RESULTSFORFULLYSUPERVISEDMETHODSARERETRIEVEDFROM THE MOTS
+ BENCHMARK.FORWEAKLYSUPERVISEDMETHODSWISEANDIRN,THERESULTSAREOBTAINEDFROMTHEIRORIGINALCODES
+ COMBINEDWITHOURTRACKINGMODULE.STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101
+ AS BACKBONERESPECTIVELY.ALLTHE BASELINEMETHODSUSERESNET-101WITHFPN
+ TABLE II
+ RESULTSONYT-VISVALIDATIONSET. METRICSFORSIPMASK[49]AREOBTAINEDFROM ITSORIGINALPAPER.
+ ALLOTHERCOMPAREDRESULTSARERETRIEVEDFROM[17].ALLMETHODSUSERESNET-50WITHFPN
+ decay exponentially after a certain number of iterations up to
+ 2×10−5. The exact number of iterations varies for each setting
+ as follows: (a) KITTI-MOTS: 10k total iterations, decay begins
+ after 5k iterations; (b) YouTube-VIS: 80k total iterations,
+ decay begins after 30k iterations. The momentum is set to 0.9.
+ The weight decay is set to 10−4, while it is not applied
+ to parameters of normalization layers. In inference, we can
+ directly perform instance segmentation on input video data
+ without using any extra information. The hyper-parameters
+ α1,α2,α3 are set to be 0.7, 0.2, and 0.1 respectively.
+ E. Main Results
+ 1) Quantitative Results: On the KITTI MOTS benchmark,
+ we compare our STC-Seg against the state-of-the-art baselines.
+ The results are presented in Table I. It can be seen that our
+ methods achieve competitive results under all evaluation met
+rics. Our STC-Seg with ResNet-50 significantly outperforms
+ all weakly supervised methods which use a stronger back
+bone (ResNet-101). In comparison with the fully supervised
+ methods, our method with ResNet-101 can still achieve rea
+sonable results. For example, it outperforms TrackR-CNN [10]
+ by 3.0% on HOTA, 2.3% on sMOTSA, 3.7% on MOTSA and
+ 0.1% on MOTSP for the car class. The results for pedestrian
+ class also are consistent. We further provide comparison
+ results of our STC-Seg with the state-of-the-art baselines
+ on YT-VIS in Table II. It can be seen that our method is
+ competitive with fully supervised MaskTrack R-CNN [11]
+ and SipMask [49]. When comparing with weakly supervised
+ methods, our method outperforms FlowIRN [17], IRN [22]
+ and WISE [13] with significant margins of 20.5%, 23.7%, and
+ 24.7% in terms of mAP metrics respectively.
+ 2) Qualitative Results: We compare qualitative results
+ of our method with those from fully supervised TrackR
+CNN [10] and MaskTrack R-CNN [11] on KITTI MOTS
+ and YT-VIS respectively. To demonstrate the advantages of
+ our approach, we select some challenging samples where
+ TrackR-CNN and MaskTrack R-CNN have weaker predictions
+ (see Fig. 5). In the KITTI MOTS examples, the masks
+ generated by Track RCNN have jagged boundaries or leave
+ false negative regions on the borders. In the YT-VIS exam
+ples, MaskTrack R-CNN struggles to depict the boundary of
+ instances with irregular shapes (e.g., eagle beak or tail). On the
+ other hand, it is clear that our method captures more accurate
+ instance boundaries.
+ 3) Discussion: The aforementioned results demonstrate the
+ strong performance of STC-Seg in videos. We thus argue
+ that it is effective to use the proposed pseudo-labels and
+ puzzle solver to supervise the mask generation, especially
+ for rigid objects (e.g., vehicles, boats, and planes). However,
+ we encounter notable performance degradation for non-rigid
+ objects (e.g., humans and animals) as the depth and flow
+ estimation become less accurate under the circumstance, which
+ compromises the corresponding pseudo-label generation for
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YANetal.: SOLVETHEPUZZLEOFINSTANCESEGMENTATIONINVIDEOS 401
+ Fig.5. QualitativeresultsofourSTC-SegincomparisonwithTrackR-CNN[10]andMaskTrackR-CNN[11]onKITTIMOTSandYT-VISrespectively.
+ AllcomparedmethodsuseResNet-101withFPN.
+ Fig. 6. Examples ofweakpredictions fromSTC-Seg. Thefirst rowis
+ fromKITTIMOTSandthesecondrowis fromYT-VIS.
+ supervision. For instances in Fig. 6, there are large false
+ positive regions betweenpedestrian legs (the top row); our
+ method fails to segment objects in front of theman (the
+ bottomrow).Theaboveweakpredictionsareprimarilycaused
+ bynoisypseudo-labelsincurredbyinaccuratedepthandflow
+ estimation.
+ F.AblationStudy
+ In this section, we investigate the effectiveness of each
+ component inSTC-Segbyconductingablationexperiments
+ onKITTIMOTS. For the assessment of our supervision
+ signalsandlossterms,wefocusontheimprovementofmask
+ generation and thus include the average precision (AP) in
+ evaluation.Toassessour tracking,weuseHOTA,MOTSA,
+ andMOTSPfromMOTS[75].
+ 1)SupervisionSignals:We showthe impact of progres
+sively integratingthedepthandflowsignals for thepseudo
+labelgeneration.AsshowninTableIII, comparedtooptical
+ flow,depthhasabetterperformanceforcarclass toproduce
+ pseudo-labels when being used alone, while optical flow
+ has a better performance for pedestrian class. In contrast,
+ by leveraging both depth and flow, we develop comple
+mentaryrepresentations that retainricher andmoreaccurate
+ detailsof the instanceboundaryforpseudo-labelgeneration
+ (seeFig. 7a).Therefore, combiningthe twosignals together
+ enablesourmodel toachieve thebest performanceover the
+ baselines thatusethemseparately.
+ 2)LossTerms:WefirstonlyuseourboxtermLbx(Ldice)
+ without the position penalty to supervise themask gener
+ation as our baseline, followed by the variants supervised
+ bydifferent loss combinations (seeTable IV).We achieve
+ immediate improvements of 2.8%(car) and 3.7%(pedes
+trian)onAPfor themodel trainedonlybyLbce+Lbx(Ldice)
+ over the baseline. While using BCE loss Lbce and our
+ Lbx(Ldice)forsupervision,wecanobtainfurtherperformance
+ gainover themodels trainedbyLbce+Lbx(Ldice). Thebest
+ results come from themodel trained by our puzzle loss
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+402
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 7. Ablation study results: a). The pseudo-labels generated by depth signals (2nd column), optical flow signals (3rd column), and combination of both
+ (4th column); b). The same mask color indicates the same instance. The first row results are from CP [77], which often encounters the issue of ID switching.
+ The second row results are from ours, which is robust to object appearance changes.
+ TABLE III
+ THERESULTSOFUSINGDIFFERENTSUPERVISIONSIGNALSFROMKITTI
+ MOTS.CANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE IV
+ THERESULTSOFUSINGDIFFERENTLOSSTERMSFROM KITTIMOTS.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ Lbd+Lbx(Ldice), whose margins over the second best results
+ (Lbd+Lbx(Ldice)) by 1.4% (car) and 1.3% (pedestrian) on
+ AP. The above results confirm our assumption for our puzzle
+ loss design that the proposed box term and boundary term
+ can work collaboratively to generate a high-quality instance
+ mask.
+ 3) Mini Network Architecture: We also evaluate the impact
+ of using different configurations for the mini network. Specif
+ically, we vary the mini network depth (number of layers)
+ from the list of {1,2,3,4} with the fixed dilation rate λ
+ of 2 and dilation convolution kernel size 3. We also vary
+ the dilation rate λ of the mini network from {1,2,3}, and
+ use the grad search to determine the filter factors φs,φt.
+ The results are shown in Table V, Table VI and Table VII
+ TABLE V
+ THEIMPACTOFDIFFERENTMININETWORKDEPTHINKITTIMOTS.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE VI
+ THEIMPACTOFDIFFERENTMININETWORKDILATIONRATEINKITTI
+ MOTS.THEDEPTHOFTHEMININETWORKIS FIXEDTO3.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE VII
+ THEIMPACTOFDIFFERENTMININETWORKFILTERFACTORSINKITTI
+ MOTS.THERESULTSAREOBTAINEDBYHOTAONCAR
+ ANDPEDESTRIANCATEGORYRESPECTIVELY
+ respectively. Those results show that a reasonable mini net
+work configuration can account for better supervision, where
+ the mini network includes 3 layers of dilated convolutions with
+ a dilation rate of 2 and a kernel size of 3. To achieve better
+ performances, the filter factors φs,φt are set to be 0.3 and 0.4
+ respectively.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ TABLE X
+ 403
+ TABLE VIII
+ THERESULTSOFUSINGDIFFERENTTRACKINGSTRATEGIESFROM
+ KITTIMOTS.CP,DP,ANDSDARESHORTFORCENTER
+ POINT,DIAGONALPOINTS, ANDSPATIO-TEMPORAL
+ DISCREPANCYRESPECTIVELY
+ TABLE IX
+ THECOMPARISONRESULTSONYT-VISVALIDATIONSET.*AND
+ † INDICATETHE USEOFTHEGROUNDTRUTHANDPSEUDO
+ LABELSRESPECTIVELYDURINGTRAINING.ALL
+ METHODSUSERESNET-101WITHFPN
+ 4) Tracking Strategy: We finally evaluate the impact of
+ using different elements for tracking (see Table VIII). For
+ CP, we use the state-of-the-art CenterTrack [77]. For DP,
+ we only use diagonal points in our tracking module. For
+ DP+SD, it uses both diagonal points and spatio-temporal
+ discrepancy. From the results we can see that DP provides
+ immediate improvements in tracking over the baseline that
+ uses CP. DP+SD further improves the tracking capacity
+ compared to DP, demonstrating strong tracking robustness
+ (see Fig. 7b). These results suggest that each element
+ (i.e. DP and SD) individually contributes towards improving
+ the tracking performance.
+ G. Extending Instance Segmentation to Videos
+ In this section, we evaluate the flexibility and generalization
+ of the proposed STC-Seg framework. In particular, we lever
+age our STC-Seg framework (i.e. pseudo-label generation,
+ puzzle solver, and tracking module) to extend image instance
+ segmentation methods to the video task. We select three widely
+ recognized instance segmentation methods, YOLACT [45],
+ BlendMask [50] and HTC [44]), and integrate with our STC
+Seg framework. The results of two set of experiments, i.e.
+ training with ground truth labels and pseudo labels, on YT-VIS
+ are shown in Table IX. Each of the selected methods is crafted
+ with our tracking module and uses the same implementation
+ as discussed in Section IV. It can be seen that methods
+ trained using the proposed pseudo-labels achieve comparable
+ results with the models trained on ground truth labels. This
+ observation is consistent among all three selected methods,
+ which demonstrates that our STC-Seg framework can flexibly
+ extend image instance segmentation methods to operate on
+ video tasks.
+ RESULTSOFUSINGGROUNDTRUTHSORNOTINSPATIO-TEMPORAL
+ SIGNALSGENERATIONWHENTRAININGOURSTC-SEGONKITTI
+ MOTS.“×”DENOTESSIGNALIS OBTAINEDFROM THE
+ PREDICTEDDEPTHORFLOW,WHILE“✓”DENOTES
+ SIGNALIS OBTAINEDFROM THEIRGROUND
+ TRUTH.CANDPDENOTEcar AND
+ pedestrian RESPECTIVELY
+ H. Results Using Ground Truth Depth and Flow
+ Since depth estimation and optical flow are critical factors
+ to generate our pseudo-label, we also directly employ the
+ ground truth depth and flow for the pseudo-label generation in
+ training to investigate the performance gap between using the
+ predicted spatio-temporal signals and ground truths. Table X
+ demonstrates the results on KITTI MOTS. We can see that
+ using depth and flow ground truths can further improve the
+ performance. Thus, we argue that with strong depth and flow
+ predictions, our method can achieve further performance gain.
+ V. CONCLUSION AND LIMITATION
+ Instance segmentation in videos is an important research
+ problem, which has been applied in a wide range of
+ vision applications. In this study, we propose a weakly
+ supervised learning method for instance segmentation in
+ videos with a spatio-temporal collaboration framework, titled
+ STC-Seg. In particular, we introduce a weakly supervised
+ training strategy which successfully combines unsupervised
+ spatio-temporal collaboration and weakly supervised signals,
+ helping networks to jointly achieve completeness and ade
+quacy for instance segmentation in videos without pixel-wised
+ labels. STC-Seg works in a plug-and-play manner and can
+ be nested in any segmentation network method. Extensive
+ experimental results indicate that STC-Seg is competitive
+ with the concurrent methods and outperforms fully supervised
+ MaskTrack R-CNN and TrackR-CNN. Albeit achieving strong
+ performance, our method requires box labels to operate train
+ing which limits its applicability to new tasks without any
+ prior knowledge. This challenge remains open for our future
+ research endeavors. There are several ongoing investigations.
+ For example, we are exploring unsupervised or weakly super
+vised object detection methods to obtain box labels. These
+ predicted box labels can then be used to predict instance
+ segmentation.
+ REFERENCES
+ [1] D.Liu,Y.Cui, L.Yan,C.Mousas,B.Yang, andY.Chen, “Denser
+Net: Weakly supervised visual localization using multi-scale feature
+ aggregation,” in Proc. AAAI Conf. Artif. Intell., 2021, vol. 35, no. 7,
+ pp. 6101–6109.
+ [2] Z. Cheng et al., “Physical attack on monocular depth estimation with
+ optimal adversarial patches,” in Proc. ECCV, 2022, pp. 1–27.
+ [3] J. Liang, Y. Wang, Y. Chen, B. Yang, and D. Liu, “A triangulation-based
+ visual localization for field robots,” IEEE/CAA J. Autom. Sinica,vol.9,
+ no. 6, pp. 1083–1086, Jun. 2022.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+404
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ [4] Y. Cui, L. Yan, Z. Cao, and D. Liu, “TF-blender: Temporal fea
+ture blender for video object detection,” in Proc. ICCV, Oct. 2021,
+ pp. 8138–8147.
+ [5] X. Lu, W. Wang, J. Shen, Y.-W. Tai, D. J. Crandall, and S. C. H. Hoi,
+ “Learning video object segmentation from unlabeled videos,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 8960–8970.
+ [6] F. Perazzi, J. Pont-Tuset, B. McWilliams, L. Van Gool, M. Gross, and
+ A. Sorkine-Hornung, “A benchmark dataset and evaluation methodology
+ for video object segmentation,” in Proc. IEEE Conf. Comput. Vis. Pattern
+ Recognit. (CVPR), Jun. 2016, pp. 724–732.
+ [7] F. Porikli, F. Bashir, and H. Sun, “Compressed domain video object
+ segmentation,” IEEE Trans. Circuits Syst. Video Technol., vol. 20, no. 1,
+ pp. 2–14, Jan. 2010.
+ [8] L. Zhao, Z. He, W. Cao, and D. Zhao, “Real-time moving object
+ segmentation and classification from HEVC compressed surveillance
+ video,” IEEE Trans. Circuits Syst. Video Technol., vol. 28, no. 6,
+ pp. 1346–1357, Jun. 2018.
+ [9] D. Liu, Y. Cui, W. Tan, and Y. Chen, “SG-Net: Spatial granu
+larity network for one-stage video instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021,
+ pp. 9816–9825.
+ [10] P. Voigtlaender et al., “MOTS: Multi-object tracking and segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 7942–7951.
+ [11] L. Yang, Y. Fan, and N. Xu, “Video instance segmentation,”
+ in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV), Oct. 2019,
+ pp. 5188–5197.
+ [12] A. Khoreva, R. Benenson, J. Hosang, M. Hein, and B. Schiele, “Simple
+ does it: Weakly supervised instance and semantic segmentation,” in
+ Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017,
+ pp. 876–885.
+ [13] I. H. Laradji, D. Vazquez, and M. Schmidt, “Where are the
+ masks: Instance segmentation with image-level supervision,” 2019,
+ arXiv:1907.01430.
+ [14] Y. Zhou, Y. Zhu, Q. Ye, Q. Qiu, and J. Jiao, “Weakly supervised instance
+ segmentation using class peak response,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit., Jun. 2018, pp. 3791–3800.
+ [15] L. Hoyer, D. Dai, Y. Chen, A. Koring, S. Saha, and L. Van Gool, “Three
+ ways to improve semantic segmentation with self-supervised depth
+ estimation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 11130–11140.
+ [16] F. Lin, H. Xie, Y. Li, and Y. Zhang, “Query-memory re-aggregation
+ for weakly-supervised video object segmentation,” in Proc. AAAI Conf.
+ Artif. Intell., 2021, vol. 35, no. 3, pp. 2038–2046.
+ [17] Q. Liu, V. Ramanathan, D. Mahajan, A. Yuille, and Z. Yang, “Weakly
+ supervised instance segmentation for videos with temporal mask con
+sistency,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 13968–13978.
+ [18] Q. Wang, L. Zhang, L. Bertinetto, W. Hu, and P. H. S. Torr, “Fast
+ online object tracking and segmentation: A unifying approach,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 1328–1338.
+ [19] Y. Wei, H. Xiao, H. Shi, Z. Jie, J. Feng, and T. S. Huang, “Revisiting
+ dilated convolution: A simple approach for weakly- and semi-supervised
+ semantic segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit., Jun. 2018, pp. 7268–7277.
+ [20] R. R. Selvaraju, M. Cogswell, A. Das, R. Vedantam, D. Parikh, and
+ D. Batra, “Grad-CAM: Visual explanations from deep networks via
+ gradient-based localization,” in Proc. IEEE Int. Conf. Comput. Vis.
+ (ICCV), Oct. 2017, pp. 618–626.
+ [21] B. Zhou, A. Khosla, A. Lapedriza, A. Oliva, and A. Torralba, “Learning
+ deep features for discriminative localization,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2016, pp. 2921–2929.
+ [22] J. Ahn, S. Cho, and S. Kwak, “Weakly supervised learning of instance
+ segmentation with inter-pixel relations,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 2209–2218.
+ [23] H. Cholakkal, G. Sun, F. S. Khan, and L. Shao, “Object counting
+ and instance segmentation with image-level supervision,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 12397–12405.
+ [24] Y. Zhu, Y. Zhou, H. Xu, Q. Ye, D. Doermann, and J. Jiao, “Learning
+ instance activation maps for weakly supervised instance segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 3116–3125.
+ [25] J. Ahn and S. Kwak, “Learning pixel-level semantic affinity with
+ image-level supervision for weakly supervised semantic segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+ pp. 4981–4990.
+ [26] J. Lee, E. Kim, S. Lee, J. Lee, and S. Yoon, “FickleNet: Weakly and
+ semi-supervised semantic image segmentation using stochastic infer
+ence,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 5267–5276.
+ [27] W. Yang, H. Huang, Z. Zhang, X. Chen, K. Huang, and S. Zhang,
+ “Towards rich feature discovery with class activation maps augmentation
+ for person re-identification,” in Proc. IEEE/CVF Conf. Comput. Vis.
+ Pattern Recognit. (CVPR), Jun. 2019, pp. 1389–1398.
+ [28] Y. Wang, J. Zhang, M. Kan, S. Shan, and X. Chen, “Self-supervised
+ equivariant attention mechanism for weakly supervised semantic seg
+mentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2020, pp. 12275–12284.
+ [29] Y. Cui et al., “DG-labeler and DGL-MOTS dataset: Boost the
+ autonomous driving perception,” in Proc. IEEE/CVF Winter Conf. Appl.
+ Comput. Vis. (WACV), Jan. 2022, pp. 58–67.
+ [30] Y. Chen et al., “BANet: Bidirectional aggregation network with occlu
+sion handling for panoptic segmentation,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020, pp. 3793–3802.
+ [31] J. Hur and S. Roth, “Joint optical flow and temporally consistent
+ semantic segmentation,” in Proc. Eur. Conf. Comput. Vis. Amsterdam,
+ The Netherlands: Springer, 2016, pp. 163–177.
+ [32] J. Dai, K. He, and J. Sun, “BoxSup: Exploiting bounding boxes to
+ supervise convolutional networks for semantic segmentation,” in Proc.
+ IEEE Int. Conf. Comput. Vis. (ICCV), Dec. 2015, pp. 1635–1643.
+ [33] C.-C. Hsu, K.-J. Hsu, C.-C. Tsai, Y.-Y. Lin, and Y.-Y. Chuang,
+ “Weakly supervised instance segmentation using the bounding box
+ tightness prior,” in Proc. Adv. Neural Inf. Process. Syst., vol. 32, 2019,
+ pp. 6586–6597.
+ [34] V. Kulharia, S. Chandra, A. Agrawal, P. Torr, and A. Tyagi, “Box2seg:
+ Attention weighted loss and discriminative feature learning for weakly
+ supervised segmentation,” in Proc. Eur. Conf. Comput. Vis. Glasgow,
+ U.K.: Springer, 2020, pp. 290–308.
+ [35] M. Rajchl et al., “DeepCut: Object segmentation from bounding box
+ annotations using convolutional neural networks,” IEEE Trans. Med.
+ Imag., vol. 36, no. 2, pp. 674–683, Jun. 2017.
+ [36] Z. Tian, C. Shen, X. Wang, and H. Chen, “BoxInst: High-performance
+ instance segmentation with box annotations,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021, pp. 5443–5452.
+ [37] A. Arun, C. Jawahar, and M. P. Kumar, “Weakly supervised instance
+ segmentation by learning annotation consistent instances,” in Proc. Eur.
+ Conf. Comput. Vis. Glasgow, U.K.: Springer, 2020, pp. 254–270.
+ [38] G. Papandreou, L.-C. Chen, K. P. Murphy, and A. L. Yuille, “Weakly
+and semi-supervised learning of a deep convolutional network for
+ semantic image segmentation,” in Proc. IEEE Int. Conf. Comput. Vis.
+ (ICCV), Dec. 2015, pp. 1742–1750.
+ [39] C. Song, Y. Huang, W. Ouyang, and L. Wang, “Box-driven class
+wise region masking and filling rate guided loss for weakly supervised
+ semantic segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit. (CVPR), Jun. 2019, pp. 3136–3145.
+ [40] W. Ge, S. Guo, W. Huang, and M. R. Scott, “Label-PEnet: Sequential
+ label propagation and enhancement networks for weakly supervised
+ instance segmentation,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.,
+ Oct. 2019, pp. 3345–3354.
+ [41] K. He, G. Gkioxari, P. Dollár, and R. Girshick, “Mask R-CNN,” in Proc.
+ IEEE Int. Conf. Comput. Vis., Oct. 2017, pp. 2961–2969.
+ [42] S. Liu, L. Qi, H. Qin, J. Shi, and J. Jia, “Path aggregation network for
+ instance segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit., Jun. 2018, pp. 8759–8768.
+ [43] Z. Huang, L. Huang, Y. Gong, C. Huang, and X. Wang, “Mask scoring
+ R-CNN,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2019, pp. 6409–6418.
+ [44] K. Chen et al., “Hybrid task cascade for instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 4974–4983.
+ [45] D. Bolya, C. Zhou, F. Xiao, and Y. J. Lee, “YOLACT: Real-time instance
+ segmentation,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV),
+ Oct. 2019, pp. 9157–9166.
+ [46] P. O. Pinheiro, T.-Y. Lin, R. Collobert, and P. Dollár, “Learning to refine
+ object segments,” in Proc. Eur. Conf. Comput. Vis. Amsterdam, The
+ Netherlands: Springer, 2016, pp. 75–91.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 405
+ [47] J. Dai, K. He, Y. Li, S. Ren, and J. Sun, “Instance-sensitive fully
+ convolutional networks,” in Proc. Eur. Conf. Comput. Vis. Amsterdam,
+ The Netherlands: Springer, 2016, pp. 534–549.
+ [48] S. Peng, W. Jiang, H. Pi, X. Li, H. Bao, and X. Zhou, “Deep snake
+ for real-time instance segmentation,” in Proc. IEEE/CVF Conf. Comput.
+ Vis. Pattern Recognit. (CVPR), Jun. 2020, pp. 8533–8542.
+ [49] J. Cao, R. M. Anwer, H. Cholakkal, F. S. Khan, Y. Pang, and
+ L. Shao, “SipMask: Spatial information preservation for fast image and
+ video instance segmentation,” in Proc. Eur. Conf. Comput. Vis., 2020,
+ pp. 1–18.
+ [50] H. Chen, K. Sun, Z. Tian, C. Shen, Y. Huang, and Y. Yan, “Blend
+Mask: Top-down meets bottom-up for instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 8573–8581.
+ [51] Z. Tian, C. Shen, H. Chen, and T. He, “FCOS: Fully convolutional
+ one-stage object detection,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+ (ICCV), Oct. 2019, pp. 9627–9636.
+ [52] Y. Shen, R. Ji, Y. Wang, Y. Wu, and L. Cao, “Cyclic guidance for weakly
+ supervised joint detection and segmentation,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 697–707.
+ [53] J. Pont-Tuset, P. Arbeláez, J. T. Barron, F. Marques, and J. Malik,
+ “Multiscale combinatorial grouping for image segmentation and object
+ proposal generation,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 39,
+ no. 1, pp. 128–140, Jan. 2017.
+ [54] J. Lee, J. Yi, C. Shin, and S. Yoon, “BBAM: Bounding box attribut
+ion map for weakly supervised semantic and instance segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2021, pp. 2643–2652.
+ [55] Y. Liu, Y.-H. Wu, P. Wen, Y. Shi, Y. Qiu, and M.-M. Cheng, “Leveraging
+ instance-, image- and dataset-level information for weakly supervised
+ instance segmentation,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44,
+ no. 3, pp. 1415–1428, Mar. 2022.
+ [56] A. Athar, S. Mahadevan, A. Osep, L. Leal-Taixé, and B. Leibe, “STEm
+Seg: Spatio–temporal embeddings for instance segmentation in videos,”
+ in Proc. Eur. Conf. Comput. Vis. Springer, 2020, pp. 158–177.
+ [57] E. Xie et al., “PolarMask: Single shot instance segmentation with polar
+ representation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2020, pp. 12193–12202.
+ [58] W. Liu, G. Lin, T. Zhang, and Z. Liu, “Guided co-segmentation network
+ for fast video object segmentation,” IEEE Trans. Circuits Syst. Video
+ Technol., vol. 31, no. 4, pp. 1607–1617, Apr. 2021.
+ [59] L. Liu and G. Fan, “Combined key-frame extraction and object-based
+ video segmentation,” IEEE Trans. Circuits Syst. Video Technol., vol. 15,
+ no. 7, pp. 869–884, Jul. 2005.
+ [60] Y. Gui, Y. Tian, D.-J. Zeng, Z.-F. Xie, and Y.-Y. Cai, “Reliable and
+ dynamic appearance modeling and label consistency enforcing for fast
+ and coherent video object segmentation with the bilateral grid,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 30, no. 12, pp. 4781–4795,
+ Dec. 2020.
+ [61] F. Lin, H. Xie, C. Liu, and Y. Zhang, “Bilateral temporal re
+aggregation for weakly-supervised video object segmentation,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 32, no. 7, pp. 4498–4512,
+ Jul. 2022.
+ [62] L. Yan et al., “Video captioning using global-local representation,” IEEE
+ Trans. Circuits Syst. Video Technol., early access, May 23, 2022, doi:
+ 10.1109/TCSVT.2022.3177320.
+ [63] X. Shu, L. Zhang, G.-J. Qi, W. Liu, and J. Tang, “Spatiotempo
+ral co-attention recurrent neural networks for human-skeleton motion
+ prediction,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44, no. 6,
+ pp. 3300–3315, Jun. 2022.
+ [64] X. Shu, J. Yang, R. Yan, and Y. Song, “Expansion-squeeze
+excitation fusion network for elderly activity recognition,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 32, no. 8, pp. 5281–5292,
+ Aug. 2022.
+ [65] L. Yan et al., “GL-RG: Global-local representation granularity for video
+ captioning,” in Proc. IJCAI, Jul. 2022.
+ [66] B. Li, X. Li, Z. Zhang, and F. Wu, “Spatio–temporal graph routing for
+ skeleton-based action recognition,” in Proc. AAAI Conf. Artif. Intell.,
+ 2019, vol. 33, no. 1, pp. 8561–8568.
+ [67] Z. Qiu, T. Yao, and T. Mei, “Learning spatio–temporal representation
+ with pseudo-3D residual networks,” in Proc. IEEE Int. Conf. Comput.
+ Vis. (ICCV), Oct. 2017, pp. 5533–5541.
+ [68] C. Godard, O. M. Aodha, M. Firman, and G. Brostow, “Digging into
+ self-supervised monocular depth estimation,” in Proc. IEEE/CVF Int.
+ Conf. Comput. Vis. (ICCV), Oct. 2019, pp. 3827–3837.
+ [69] K. Luo, C. Wang, S. Liu, H. Fan, J. Wang, and J. Sun, “UPFlow:
+ Upsampling pyramid for unsupervised optical flow learning,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021,
+ pp. 1045–1054.
+ [70] F. Milletari, N. Navab, and S.-A. Ahmadi, “V-Net: Fully convolutional
+ neural networks for volumetric medical image segmentation,” in Proc.
+ 4th Int. Conf. 3D Vis. (DV), Oct. 2016, pp. 565–571.
+ [71] Y. Xu, L. Zhu, Y. Yang, and F. Wu, “Training robust object detectors
+ from noisy category labels and imprecise bounding boxes,” IEEE Trans.
+ Image Process., vol. 30, pp. 5782–5792, 2021.
+ [72] J. Shu et al., “Meta-weight-Net: Learning an explicit mapping for sample
+ weighting,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 32,
+ 2019, pp. 1–12.
+ [73] K.-H. Lee, X. He, L. Zhang, and L. Yang, “CleanNet: Transfer
+ learning for scalable image classifier training with label noise,” in
+ Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+ pp. 5447–5456.
+ [74] H. Li, Z. Wu, C. Zhu, C. Xiong, R. Socher, and L. S. Davis,
+ “Learning from noisy anchors for one-stage object detection,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 10588–10597.
+ [75] J. Luiten et al., “HOTA: A higher order metric for evaluating multi
+object tracking,” Int. J. Comput. Vis., vol. 129, no. 2, pp. 548–578, 2021.
+ [76] T. Yin, X. Zhou, and P. Krahenbuhl, “Center-based 3D object detection
+ and tracking,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 11784–11793.
+ [77] X. Zhou, V. Koltun, and P. Krähenbühl, “Tracking objects as points,” in
+ Proc. ECCV, 2020, pp. 474–490.
+ [78] N. Wojke, A. Bewley, and D. Paulus, “Simple online and realtime
+ tracking with a deep association metric,” in Proc. IEEE Int. Conf. Image
+ Process. (ICIP), Beijing, China, Sep. 2017, pp. 3645–3649.
+ [79] Z. Wang, L. Zheng, Y. Liu, Y. Li, and S. Wang, “Towards real-time
+ multi-object tracking,” in Proc. Eur. Conf. Comput. Vis. Glasgow, U.K.:
+ Springer, 2020, pp. 107–122.
+ [80] Y. Zhang, C. Wang, X. Wang, W. Zeng, and W. Liu, “Fairmot: On the
+ fairness of detection and re-identification in multiple object tracking,”
+ Int. J. Comput. Vis., vol. 129, no. 11, pp. 3069–3087, 2021.
+ [81] S. Qiao, Y. Zhu, H. Adam, A. Yuille, and L.-C. Chen, “ViP-DeepLab:
+ Learning visual perception with depth-aware video panoptic segmenta
+tion,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2021, pp. 3997–4008.
+ [82] A. Kim, A. Osep, and L. Leal-Taixé, “EagerMOT: 3D multi-object
+ tracking via sensor fusion,” in Proc. IEEE Int. Conf. Robot. Autom.
+ (ICRA), May 2021, pp. 11315–11321.
+ [83] J. Luiten, T. Fischer, and B. Leibe, “Track to reconstruct and reconstruct
+ to track,” IEEE Robot. Autom. Lett., vol. 5, no. 2, pp. 1803–1810,
+ Apr. 2020.
+ [84] Z. Xu et al., “Segment as points for efficient online multi-object tracking
+ and segmentation,” in Proc. Eur. Conf. Comput. Vis. (ECCV), 2020,
+ pp. 264–281.
+ [85] B. Cheng, O. Parkhi, and A. Kirillov, “Pointly-supervised instance
+ segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.,
+ Jun. 2022, pp. 2617–2626.
+ [86] I. Ruiz, L. Porzi, S. R. Bulo, P. Kontschieder, and J. Serrat, “Weakly
+ supervised multi-object tracking and segmentation,” in Proc. IEEE
+ Winter Conf. Appl. Comput. Vis. Workshops (WACVW), Jan. 2021,
+ pp. 125–133.
+ [87] Z. Tian, C. Shen, and H. Chen, “Conditional convolutions for
+ instance segmentation,” in Proc. Eur. Conf. Comput. Vis., 2020,
+ pp. 282–298.
+ [88] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for
+ image recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2016, pp. 770–778.
+ [89] T.-Y. Lin, P. Dollár, R. Girshick, K. He, B. Hariharan, and S. Belongie,
+ “Feature pyramid networks for object detection,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 2117–2125.
+ [90] A. Geiger, P. Lenz, and R. Urtasun, “Are we ready for autonomous
+ driving? The KITTI vision benchmark suite,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit., Jun. 2012, pp. 3354–3361.
+ [91] T. Zhou, M. Brown, N. Snavely, and D. G. Lowe, “Unsupervised
+ learning of depth and ego-motion from video,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 1851–1858.
+ [92] N. Silberman, D. Hoiem, P. Kohli, and R. Fergus, “Indoor segmentation
+ and support inference from RGBD images,” in Proc. 12th Eur. Conf.
+ Comput. Vis., Florence, Italy, vol. 7576, Oct. 2012, pp. 746–760.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+406
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ [93] R. Ranftl, K. Lasinger, D. Hafner, K. Schindler, and V. Koltun, “Towards
+ robust monocular depth estimation: Mixing datasets for zero-shot cross
+dataset transfer,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44, no. 3,
+ pp. 1623–1637, Mar. 2022.
+ [94] M. Menze and A. Geiger, “Object scene flow for autonomous vehicles,”
+ in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2015,
+ pp. 3061–3070.
+ [95] L. Liu et al., “Learning by analogy: Reliable supervision from
+ transformations for unsupervised optical flow estimation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 6489–6498.
+ [96] N. Mayer et al., “A large dataset to train convolutional networks for
+ disparity, optical flow, and scene flow estimation,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2016, pp. 4040–4048.
+ [97] J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei, “ImageNet:
+ A large-scale hierarchical image database,” in Proc. CVPR, Jun. 2009,
+ pp. 248–255.
+ Liqi Yan (Member, IEEE) received the bachelor’s
+ degree from the Beijing University of Posts and
+ Telecommunications. He is currently pursuing the
+ Ph.D. degree in computer science from Fudan Uni
+versity. He is also enrolled with the School of Engi
+neering, Westlake University. He is focusing on com
+bining the computer vision with natural language
+ processing on the platform of robotics. He has con
+ducted basic and applied research, including video
+ captioning, visual-language robotic navigation, and
+ visual geo-localization. He has coauthored over sev
+eral publications in top-tier conferences, including ICCV, AAAI, IJCAI,
+ IROS, and ICASSP. His current research interests include deep learning (DL),
+ computer vision (CV), robotic navigation, and natural language processing
+ (NLP). He has served as the Chair for the Westlake University ACM Student
+ Chapter.
+ Qifan Wang received the B.S. and M.S. degrees in
+ computer science from Tsinghua University and the
+ Ph.D. degree in computer science from Purdue Uni
+versity in 2015. He is currently a Research Scientist
+ at Meta AI, leading a team building innovative deep
+ learning and natural language processing models for
+ AI integrity. Before joining Meta, he worked as a
+ Research Engineer at Google Research, focusing on
+ deep domain representations and large-scale object
+ understanding. He also worked at Intel Labs for
+ two years. He has coauthored over 50 publications
+ in top-tier conferences and journals, including SIGKDD, SIGIR, WWW,
+ NeurIPS, IJCAI, AAAI, ACL, EMNLP, WSDM, CIKM, ECCV, IEEE
+ TRANSACTIONS ON PATTERN ANALYSIS AND MACHINE INTELLIGENCE,
+ IEEE TRANSACTIONS ON KNOWLEDGE AND DATA ENGINEERING, and
+ TOIS. His research interests include deep learning, natural language process
+ing, information retrieval, data mining, and computer vision. He also serves
+ as an area chair, a program committee member, an editorial board member,
+ and a reviewer for academic conferences and journals.
+ Siqi Ma received the master’s degree from
+ the Shanghai University of Technology in 2018.
+ He worked for a leading domestic technology AI
+ company after graduation and then continued his
+ research work at Westlake University. He is currently
+ working as a Research Assistant with the CAIRI
+ Laboratory, Westlake University, which focuses on
+ deep learning fundamental research, machine vision,
+ and interdisciplinary research in artificial intelli
+gence. His current research interests include machine
+ vision and machine learning interdisciplinary.
+ Jingang Wang received the Ph.D. degree in com
+puter science from the joint Ph.D. program between
+ the Beijing Institute of Technology and Purdue Uni
+versity in 2016. He is currently a Senior Algo
+rithm Expert and a Tech Lead of the Pre-Training
+ Team, NLP Center, Meituan. Before that, he was
+ a Senior Algorithm Engineer at Alibaba DAMO
+ Academy. His research interests include natural lan
+guage processing, information retrieval, and machine
+ translation.
+ Changbin Yu (Senior Member, IEEE) received the
+ B.Eng. degree (Hons.) from the NTU, Singapore,
+ and the Ph.D. degree from The Australian National
+ University (ANU) in 2008. He is currently an Aca
+demic Dean of AI at Shandong First Medical Uni
+versity, an Adjunct Professor with Fudan University,
+ and a Distinguished Visiting Professor with the
+ University of Johannesburg. He had previously held
+ tenured professorships at ANU, Westlake University,
+ and Curtin University. He was elected as a fellow
+ of the Institution of Engineers Australia (FIEAust)
+ in 2015. He received a John Booker Medal from the Australian Academy of
+ Science in 2019.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ 393
+ Solve the Puzzle of Instance Segmentation in
+ Videos: A Weakly Supervised Framework
+ With Spatio-Temporal Collaboration
+ Liqi Yan
+ , Member, IEEE,QifanWang
+ , Siqi Ma, Jingang Wang, and Changbin Yu, Senior Member, IEEE
+ Abstract—Instance segmentation in videos, which aims to
+ segment and track multiple objects in video frames, has garnered
+ a flurry of research attention in recent years. In this paper,
+ we present a novel weakly supervised framework with Spatio
+Temporal Collaboration for instance Segmentation in videos,
+ namely STC-Seg. Concretely, STC-Seg demonstrates four con
+tributions. First, we leverage the complementary representa
+tions from unsupervised depth estimation and optical flow to
+ produce effective pseudo-labels for training deep networks and
+ predicting high-quality instance masks. Second, to enhance the
+ mask generation, we devise a puzzle loss, which enables end
+to-end training using box-level annotations. Third, our track
+ing module jointly utilizes bounding-box diagonal points with
+ spatio-temporal discrepancy to model movements, which largely
+ improves the robustness to different object appearances. Finally,
+ our framework is flexible and enables image-level instance
+ segmentation methods to operate the video-level task. We conduct
+ an extensive set of experiments on the KITTI MOTS and
+ YT-VIS datasets. Experimental results demonstrate that our
+ method achieves strong performance and even outperforms fully
+ supervised TrackR-CNN and MaskTrack R-CNN. We believe that
+ STC-Seg can be a valuable addition to the community, as it
+ reflects the tip of an iceberg about the innovative opportunities
+ in the weakly supervised paradigm for instance segmentation in
+ videos.
+ Index Terms—Video instance segmentation, weakly supervised
+ learning, multi-object tracking and segmentation.
+ Manuscript received 31 May 2022; revised 14 August 2022;
+ accepted 24 August 2022. Date of publication 29 August 2022; date of
+ current version 6 January 2023. This work was supported in part by the
+ Shandong Provincial Natural Science Fund under Grant 2022HWYQ-081
+ and in part by the National Science Foundation of China Key Project under
+ Grant U21A20488. This article was recommended by Associate Editor
+ Z. Ding. (Corresponding author: Changbin Yu.)
+ Liqi Yan is with the Westlake Institute for Advanced Study, Fudan
+ University, Shanghai 200437, China, and also with the School of Engineering,
+ Westlake University, Hangzhou 310024, China (e-mail: yanliqi@westlake.
+ edu.cn).
+ Qifan Wang is with Meta AI, Menlo Park, CA 94025 USA (e-mail:
+ wqfcr@fb.com).
+ Siqi Ma is with the School of Engineering, Westlake University,
+ Hangzhou 310024, China (e-mail: masiqi@westlake.edu.cn).
+ Jingang Wang is with Meituan, Beijing 100102, China (e-mail:
+ wangjingang02@meituan.com).
+ Changbin Yu is with the College of Artificial Intelligence and Big Data for
+ Medical Science, Shandong First Medical University & Shandong Academy
+ of Medical Sciences, Jinan 250021, China, and also with the Institute
+ for Intelligent Robots, Fudan University, Shanghai 200437, China (e-mail:
+ yu_lab@sdfmu.edu.cn).
+ Color versions of one or more figures in this article are available at
+ https://doi.org/10.1109/TCSVT.2022.3202574.
+ Digital Object Identifier 10.1109/TCSVT.2022.3202574
+ I. INTRODUCTION
+ THEimportanceoftheweaklysupervised paradigmcannot
+ be overstated, as it permeates through every corner of
+ recent advances in computer vision [1], [2], [3] to reduce the
+ annotation cost [1], [4]. In contrast to object segmentation [5],
+ [6], [7], [8], for instance segmentation in videos [9], [10], [11],
+ dense annotations need to depict accurate instance boundaries
+ as well as object temporal consistency across frames, which
+ is extremely labor-intensive to build datasets at scale required
+ to train a deep network. Although a large body of works
+ on weakly supervised image instance segmentation have been
+ discussed in literature [12], [13], [14], the exploration in video
+ domain remains largely unavailable until fairly recently [5],
+ [15], [16], [17], [18]. Therefore, understanding and improving
+ the weakly supervised methods of instance segmentation in
+ videos are the key enablers for future advances of this critical
+ task in computer vision.
+ Developing a weakly supervised framework is a challenging
+ task. One core objective is to devise reliable pseudo-labels
+ and loss function to perform effective supervision [12], [19].
+ To date, a popular convention is to use class labels produced
+ by Class Activation Map (CAM) or its variants [20], [21] to
+ supervise image instance segmentation [13], [14], [22], [23],
+ [24]. However, the CAM-based supervision signal may capture
+ spurious dependencies in training due to two daunting issues:
+ 1) It can only identify the most salient features on object
+ regions, which often lose the overall object structures, resulting
+ in partial instance segmentation [25], [26], [27]; 2) It cannot
+ separate overlapping instances of the same class and generally
+ lose the capacity to describe individual targets, when dealing
+ with multiple instances present in an image [22], [28], [29].
+ The challenge is further compounded by instance appearance
+ changes caused by occlusion or truncation [30], [31]. Thus,
+ though CAM is outstanding in semantic segmentation, it does
+ not perform well in instance segmentation. Under the circum
+stance, there is a necessity to explore novel weakly supervised
+ approaches with more effective pseudo-labels for video-level
+ instance segmentation.
+ Aside from the CAM-based family, a line of research
+ has attempted to tackle image instance segmentation with
+ box-level annotations [32], [33], [34], [35]. Albeit achieving
+ improvements over CAM-based solutions, they generally
+ have complicated training pipelines, which incur a large
+ 1051-8215 © 2022 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+ See https://www.ieee.org/publications/rights/index.html for more information.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+394
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 1. Working pipeline of STC-Seg. The pseudo-labels are generated from spatial and temporal signals, which capture the instance boundary with more
+ accurate edges. Our puzzle solver supervises mask predictions to assemble each sub-region mask together to match the shape of the target with box annotations.
+ computational budget and long supervision schedule.
+ To address this issue, a recent work, BoxInst [36] introduces
+ a simple yet effective mask loss for training, including a
+ projection term and an affinity term. The first term minimizes
+ the discrepancy between the horizontal and vertical projections
+ of the predicted mask and the ground-truth box. The second
+ term is to identify confident pixel pairs with the same label
+ to explore the instance boundary. With the same supervision
+ level, BoxInst achieves significant improvement over the prior
+ efforts using box annotations [37], [38], [39]. This successful
+ exploration highlights the importance of loss function to
+ train deep networks in a weakly supervised fashion for the
+ segmentation task.
+ On the basis of the preceding lessons, one could argue that
+ box-supervised instance segmentation in videos is feasible. In
+ view of the nature of video data, our conjecture is that one
+ can leverage the rich spatio-temporal information in video
+ to develop reliable pseudo-labels for enhancing the box-level
+ supervision. In particular, optical flow captures the temporal
+ motion among instances which ensures the same instances
+ have similar flow vectors (Fig. 1a), while depth estimation
+ provides the spatial relation between instance and background
+ (Fig. 1b). We leverage the complementary representation of
+ spatio-temporal signals to produce high-quality pseudo-label
+ to supervise instance segmentation in videos. To enable effec
+tive training with the proposed pseudo-labels, we propose
+ a novel puzzle loss that organizes learning in a manner
+ compatible with box annotations, including a boundary term
+ and a box term. The two terms collaboratively resolve the
+ puzzle of how to assemble suitable sub-region masks that
+ match the shape of the instance, facilitating the trained model
+ to be boundary sensitive for fine-grained prediction (Fig. 1c).
+ Furthermore, in contrast to previous efforts [10], [11], which
+ use simple matching algorithms for tracking, we introduce an
+ enhanced tracking module that tracks diagonal points across
+ frames and ensures spatio-temporal consistency for instance
+ movement. To establish the conjecture, our work essentially
+ delivers the following contributions:
+ • We develop a Spatio-Temporal Collaboration framework
+ for instance Segmentation (STC-Seg) in videos, which
+ leverages the complementary representations of depth
+ estimation and optical flow to produce high-quality
+ pseudo-labels for training the deep network.
+ • Wedesign an effective puzzle loss to assemble mask pre
+dictions on each sub-region together in a self-supervised
+ manner. A strong tracking module is implemented with
+ spatio-temporal discrepancy for robust object appearance
+ changes.
+ • The flexibility of our STC-Seg enables weakly supervised
+ instance segmentation and tracking methods to have the
+ capacity to train fully supervised segmentation methods.
+ • We conduct extensive experiments and demonstrate that
+ our method is competitive with the state-of-the-art sys
+tem [17] and outperforms fully supervised MaskTrack
+ R-CNN [11] and TrackR-CNN [10].
+ II. RELATED WORK
+ Although weakly supervised instance segmentation in
+ videos is relatively under-studied, this section summarizes
+ the recent advances in the related fields regarding weakly
+ supervised instance segmentation, box-supervised methods,
+ and segmenting in videos [14], [23], [24], [33], [36], [40].
+ A. Fully Supervised Instance Segmentation
+ In the past decade, various fully supervised image instance
+ segmentation methods have been proposed. These approaches
+ can generally be divided into two categories: two-stage and
+ single-stage approaches. Two-stage methods [41], [42], [43],
+ [44] typically generate multiple object proposals in the first
+ stage and predict masks in the second stage. While two-stage
+ methods achieve high accuracy with large computational
+ cost, single-stage approaches [45], [46], [47], [48], [49], [50]
+ employ predictions of bounding-boxes and instance masks at
+ the same time. For example, SipMask [49] proposes a novel
+ light-weight spatial preservation module that preserves the
+ spatial information within a bounding-box. BlendMask [50]
+ is based on the fully convolutional one-stage object detector
+ (FCOS) [51], incorporating rich instance-level information
+ with accurate dense pixel features. However, all these meth
+ods are built upon accurate human-labeled mask annotations,
+ which requires far more human annotators than box anno
+tations. In contrast, our method uses only box annotations
+ instead of mask annotations, and thus dramatically reduces
+ labeling efforts.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 395
+ B. Weakly-Supervised Instance Segmentation
+ Using class labels to extract masks from CAMs or sim
+ilar attention maps has gained popularity in training weakly
+ supervised instance segmentation models [14], [23], [40], [52].
+ However, CAM-based supervision is not intrinsically suitable
+ for the instance segmentation task as it cannot provide accu
+rate information regarding individual objects, which poten
+tially causes confusion in prediction [22], [28], [30], [31].
+ One closely related work is flowIRN [17], which uses the
+ f
+ low fields as the extra supervision signal to operate train
+ing. Our technique is conceptually distinct in three folds:
+ 1) flowIRN only uses flow field to generate pseudo-labels
+ and thus fails to fully exploit the spatio-temporal represen
+tations. In contrast, we leverage the collaborative power of
+ spatio-temporal collaboration to produce high-quality pseudo
+labels; 2) flowIRN trains different contributing modules
+ (i.e., CAM and optical flow) dis-jointly, resulting in an
+ ineffective and complicated training pipeline. We propose
+ a puzzle solver that organizes learning through the use of
+ our pseudo-labels with box annotations, enable a fully end
+to-end fashion; 3) flowIRN directly adopts exiting tracking
+ method [10], while our tracking module builds on a novel
+ diagonal-point-based approach. More comparison results will
+ be provided in the experiments. To address this issue, we aim
+ to explore the more effective pseudo-labels from spatio
+temporal collaboration for weak supervision.
+ C. Box-Supervised Instance Segmentation
+ Our work is also closely related to the box-supervised
+ instance segmentation methods. At the image level, SDI [12]
+ might be the first box-supervised instance segmentation
+ framework, which utilizes candidate proposals generated by
+ MCG [53] to operate segmentation. In the same vein,
+ a line of recent work [33], [37], [54], [55] formulates the
+ box-supervised instance segmentation by sampling the positive
+ and negative proposals based on the ROIs feature maps. How
+ever, using proposals for instance segmentation has redundant
+ representations because a mask is repeatedly encoded at each
+ foreground feature around ROIs. In contrast, our method is
+ proposal-free as we remove the need for proposal sampling
+ to supervise the mask learning. BoxInst [36] is one of the
+ works that is similar to ours. It uses a pairwise loss function
+ to operate training on low-level color features. However,
+ their pairwise loss works in an oversimplified manner that
+ encourages confident pixel neighbors to have similar mask
+ predictions, inevitably introducing noisy supervision. Different
+ from BoxInst, our method produces high-quality pseudo-labels
+ derived from high-level spatio-temporal priors for supervi
+sion. To organize learning, we devise a novel puzzle loss to
+ supervise our mask generation to capture accurate instance
+ boundaries with box annotations.
+ D. Video Segmentation
+ A series of fully supervised approaches have emerged for
+ segmentation in videos [9], [35], [45], [56], [57], [58], [59],
+ [60]. For instance, VIS [11] and MOTS [10] both extend
+ Mask R-CNN [41] from images to videos and simultaneously
+ segment and track all object instances in videos. To the best
+ of our knowledge, flowIRN [17] and BTRA [61] may be two
+ of the few that explore weakly supervised learning for the
+ video-level instance segmentation task. FlowIRN [17] trains
+ different contributing modules (i.e., CAM and optical flow)
+ dis-jointly and incurs additional dependencies, resulting in
+ a dense training pipeline. BTRA [61] only box to generate
+ pseudo-labels and thus fails to fully exploit the spatio-temporal
+ representations for the boundary supervision. To maximize
+ synergies for instance segmentation in videos, we propose a
+ weakly supervised spatio-temporal collaboration framework in
+ the paper. Unlike the aforementioned methods which overlook
+ the sub-task of tracking in videos, we implement a strong
+ tracking module to model instance movement across frames
+ by using diagonal points with spatio-temporal information.
+ Compared to the prior efforts [10], [11], [17], our tracking
+ module has a more robust tracking capacity.
+ E. Spatio-Temporal Collaboration
+ A bunch of previous works [4], [56], [62], [63], [64], [65],
+ [66], [67] explore spatio-temporal collaboration to assist visual
+ tasks. For example, P3D ResNet [67] mitigated limitations of
+ deep 3D CNN by devising a family of bottleneck building
+ blocks that leverages both spatial and temporal convolutional
+ f
+ ilters.
+ SC-RNN [63] simultaneously captures the spatial coher
+ence and the temporal evolution in spatio-temporal space.
+ ESE-FN [64] captures motion trajectory and amplitude in
+ spatio-temporal space using skeleton modality, which is effec
+tive in modeling elderly activities. However, these methods
+ embed spatio-temporal analysis into the entire model, where
+ the spatio-temporal modeling process is required during infer
+ence. In our method, the spatio-temporal collaboration is only
+ used as the supervision signal during training, but not needed
+ in the segmentation prediction.
+ III. STC-SEG APPROACH
+ A. Overall Framework
+ The overall framework of STC-Seg is shown in Fig. 2.
+ During training, the pseudo-labels are first generated with
+ spatio-temporal collaboration. The segmentation model is
+ then jointly learned based on the pseudo-labels and the box
+ labels/annotations via a novel puzzle solver. During inference,
+ we directly perform instance segmentation on input video data
+ without using any extra information (i.e., depth estimation or
+ optical flow). Essentially, our STC-Seg consists of three core
+ components: 1) the spatio-temporal pseudo-label generation,
+ which offers a supervision signal for our training; 2) the
+ puzzle solver, which organizes the training of video instance
+ segmentation models; and 3) the tracking module, which
+ enables robust tracking capacity. We present the details of each
+ component in the following sections.
+ B. Puzzle Solver With Spatio-Temporal Collaboration
+ 1) Pseudo-Label Generation: Most existing works [37],
+ [54], [55] rely solely on optical flow to generate pseudo
+label. In this work, we leverage both spatial and temporal
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+396
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 2. The overview of STC-Seg framework. During training, pseudo-labels from spatio-temporal collaboration and box labels from box annotation are
+ jointly fed into the puzzle solver to learn a unified instance segmentation network. During inference, the learned segmentation network is applied to every
+ frame, followed by a tracking module to perform robust object tracking. Dashed and solid paths are the pipelines for training and inference respectively.
+ signals in our pseudo-label generation pipeline to better cap
+ture rich boundary information and effectively distinguish the
+ foreground (the instance) from the background. In particular,
+ our method adopts spatial signal Ss obtained from depth
+ estimation [68], and temporal signal St obtained from optical
+ f
+ low [69].
+ As shown in Fig. 2, we directly employ depth estimation
+ xs ∈ Rh×w×1 and optical flow xt ∈ Rh×w×2 as the inputs for
+ our pseudo-label generation module. The above two inputs
+ keep the same resolution w×h with the input frame, in order
+ to build the pixel-to-pixel correspondence. Each signal x ∈
+ {xs, xt} is then fed into a mini network [19] to compute the
+ contextual similarity at each pixel location for obtaining the
+ spatial and temporal signals, respectively. Given a location
+ (i, j) on the input x, the contextual similarity score Si,j on
+ the corresponding signal S ∈{Ss, St} is computed as:
+ Si,j =
+ δ wk1,k2 
+· x(i+λ·k1),(j+λ·k2), xi,j
+ k1,k2
+ (1)
+ where k1,k2 ∈{−1,0,1}. w is the dilated kernel, and λ is the
+ dilation rate. δ(,)1 is the similarity measurement function. For
+ the obtained signals, we have Ss, St ∈ Rh×w×1.
+ To produce the pseudo-label M for training, we leverage the
+ complementary representations of the two signals by fusing
+ them together with a threshold filter:
+ M=(Ss −φs)∧(St −φt)
+ (2)
+ where φs,φt denote the filter factor to determine the salience
+ threshold of each signal on the foreground instances. However,
+ noises may reside on the pseudo-labels and segregate one
+ target instance into multiple sub-regions.
+ 2) Puzzle Solver: As mentioned above, directly using the
+ pseudo-labels without constraints may result in excessively
+ noisy supervision and suboptimal training outcomes. In com
+parison to fully supervised information, which can be labeled
+ pixel-by-pixel, solving the puzzle of predicting the imaginary
+ mask is difficult in the weakly supervised fashion. To address
+ 1δ xi,j, xi ,j = er· xi,j−xi ,j p.
+ this issue, we introduce a novel puzzle solver that orga
+nizes learning through the use of our pseudo-labels with box
+ annotations.
+ Our puzzle solver essentially designs a puzzle loss that oper
+ates supervision of mask prediction with two loss terms. The
+ f
+ irst one is Boundary term, which explores all the candidate
+ sub-regions of the target instances to depict their boundaries.
+ The second one is Box term, which ensures maximal positions
+ of the predicted mask boundaries can closely stay within the
+ ground truths. The two terms work collaboratively to solve the
+ puzzle of how to assemble suitable sub-region masks together
+ to match the shape of the instance (see Fig. 3). Our puzzle
+ solver is to jointly optimize both the boundary term Lbd and
+ box term Lbx with respect to the network parameters θ:
+ argmin
+ Lpz = argmin
+ θ
+ θ
+ (Lbd + Lbx)
+ (3)
+ Boundary term: With ground truths, fully supervised meth
+ods can use binary cross entropy (BCE) loss Lbce to supervise
+ the mask generation, which uses both positive samples (the
+ foreground) and negative samples (the background) in training.
+ However, as discussed in Section III-B.1, our pseudo-labels
+ are noisy references with unwanted inner negative samples
+ inside the object, which would introduce inevitable noises in
+ training. To address this issue, we modify Lbce by focus
+ing on learning positive examples to capture the instance
+ boundaries (Fig. 3c). Concretely, given a pixel location (i, j)
+ on the pseudo-labels M, its corresponding label mi,j can
+ be mi,j ∈ {0,1}, where 1 denotes the foreground instance
+ and 0 denotes the background. To learn the instance mask
+ generation, our boundary loss only operates learning of the
+ posterior probability P( ˜ mi,j|mi,j = 1) from positive samples,
+ where ˜ mi,j ∈{0,1} is the predicted mask at (i, j).Giventhe
+ input size w ×h, our boundary loss is given by:
+ Lbd =− 1
+ h ×w
+ w
+ j =1
+ h
+ i=1
+ mi,j log P( ˜ mi,j = 1)
+ (4)
+ At first glance, only using the positive sampling may not
+ work well in training. However, an important observation is
+ that our pseudo-labels allow the network to effectively learn
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 397
+ Fig. 3. Demonstration of puzzle solver. Our puzzle solver performs strong supervision with box annotations and pseudo labels. Albeit the corresponding
+ pseudo labels for one target generally include multiple sub-regions, i.e., sub-region 1-4 in (b), the boundary term and box term in our puzzle loss work
+ collaboratively to supervise the mask prediction for aligning the shape of the instance while being consistent with the ground truth box.
+ the dominant representations from the positive examples. With
+ additional box supervision, the boundary loss computation
+ effectively captures the instance boundaries, thus largely elim
+inating supervision noises.
+ Box term: To perform box-level supervision, BoxInst [36]
+ adopts dice loss [70], which computes the similarity distance
+ of the predicted bounding boxes and the ground truths. How
+ever, a prediction, which is larger or smaller than the ground
+ truth, may have a similar penalty in dice loss computation.
+ Thus, a model supervised by the dice loss tends to generate
+ overly saturated masks that go beyond the boxes. To address
+ this issue, we introduce a position penalty into dice loss Ldice
+ to penalize the model for generating a mask that exceeds the
+ box (as shown in Fig. 3d). This penalty term encourages the
+ mask boundary to align with the ground truth box:
+ N
+ 2
+ Ldice(p, g) =
+ N
+ i
+ i
+ p2
+ i + g2
+ i
+ Dice loss Ldice
+ N
+ pigi
+ i
+ +
+ [max(pi − gi,0)]2
+ N
+ i
+ g2
+ i
+ Position penalty
+ (5)
+ where pi ∈ (0,1) and gi ∈ {0,1} are the log-likelihood
+ scores of the prediction and the ground truth respectively. N is
+ the length of the input sequence. The position penalty can
+ be understood as the proportion of the predicted region that
+ exceeds the ground truth region. As shown in Eq. 5, it is clear
+ that there is no position penalty for those points within the
+ ground truth. The final box term can be written as:
+ Lbx( ˜ m, B) = Ldice(Projx( ˜ m),Projx(B))
+ +Ldice(Projy( ˜ m),Projy(B))
+ (6)
+ where ˜ m is the predicted instance mask. B is the corre
+sponding box annotations. Projx and Projy are the projec
+tion functions [36], which map ˜ m and B onto x-axis and
+ y-axis, respectively. It is worth mentioning that the new Lbx
+ effectively rectifies the expanded masks outside the box that
+ are introduced by the Lbd. In other words, the Lbd allows
+ the model to predict larger masks, while Lbx ensures the
+ model predicts precise masks that are consistent with the
+ ground truth boxes. Note that the segmentation generation
+ is independent of pseudo-label generation. The computational
+ cost only increases when calculating the losses, which has the
+ same computational complexity as the MSE loss. Therefore,
+ our method will not introduce additional computation cost.
+ Our method can also be applied to those tasks with noise
+ supervision, such as target segmentation tasks with inaccurate
+ box labeling or incorrect labels [71], [72], [73], [74]. For
+ the former cases, we can slightly modify the loss of box
+ term to assign a larger weight to the positive feedback of
+ the intersection area, while assigning the negative feedback
+ outside the intersection area a smaller weight. For the latter
+ cases, we can modify the loss of boundary term by assigning a
+ relatively large weight to the positive item and a small weight
+ to the negative item in the cross entropy. In this way, our loss
+ function is able to deal with more inaccurate box annotations
+ and label predictions. Intuitively, the classification task can
+ be regarded as a regression problem by taking the irrelevant
+ labels as the “background”, so that the regression boundary
+ can shrink inward on the feature plane until the accurate label
+ boundary is found.
+ C. Tracking Module
+ Existing methods [75], [76], [77] prioritize object position
+ modeling for tracking, which may cause confusion when two
+ objects are extremely occluded or overlapped as shown in
+ Fig. 2. To address this issue, we place a premium on both
+ object size and position modeling in our tracking module.
+ Moreover, the spatio-temporal changes on individual objects
+ should remain within a reasonable range, given the consistency
+ of video object movement across frames. In light of both
+ observations, we introduce a novel tracking module using
+ diagonal points with spatio-temporal discrepancy.
+ 1) Diagonal Points Tracking: To represent the object posi
+tion and size, we adopt diagonal points to model the object
+ movement by using the upper-left corner (x1, y1) and the
+ lower-right corner (x2, y2) of the bounding box. Similar to
+ almost tracking methodology [76], [78], we adopt a recursive
+ Kalman Filter and frame-by-frame data association to predict
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+398 IEEETRANSACTIONSONCIRCUITSANDSYSTEMSFORVIDEOTECHNOLOGY,VOL.33,NO.1, JANUARY2023
+ the future location for each trackedobject. Themovement
+ lt−1→t o of a trackedobject o in the tth frame is used to
+ predict the future location pt+1(lt o)= lt−1→t o +lt o of this
+ object at (t+1)th,where lt o is the locationofobject oand
+ lt−1→t o isgivenby:
+ lt−1→t
+ o =(xt
+ 1−xt−1
+ 1 ,yt
+ 1−yt−1
+ 1 ,xt
+ 2−xt−1
+ 2 ,yt
+ 2−yt−1
+ 2 ) (7)
+ Duringobject tracking,wemaintainadictionaryO≤t =
+ {ˆ o} ˆ Kof ˆ Ktrackedobjectsinformerframes.GivenKdetected
+ objectsOt+1={o}K in (t+1)th frame, our tracking is to
+ builda list of one-to-onematchingpairs ˆ o=ϕ(o) ∈O≤t
+ tominimize the Euclidean distance between ground truth
+ locations lt+1 o of eacho ∈Ot+1 and the predicted future
+ locations pt+1(lt
+ ϕ(o)):
+ argmin
+ ϕ Ot+1
+ <pt+1(lt
+ ϕ(o)),lt+1
+ o > (8)
+ 2)Bi-GreedyMatching:Conventionaltrackingmethodsare
+ generallyone-directional as theyperforma popular greedy
+ search, calledHungarianAlgorithm, tobuild thecorrespon
+dencesϕ fromtheprevious frame to the current one (e.g.,
+ JDE[79],DeepSORT[78],FairMot [80],CenterTrack[77]).
+ However,thepositionofthesameobjectinthepreviousframe
+ maynotalwaysbetheclosestonethatappearedinthecurrent
+ frame,which causes confusion in tracking. To address this
+ problem, somemethodsusepre-trainedCNNdescriptors to
+ distinguishobjects[11],[78],butcomputingfeaturestakestoo
+ muchtimeandtheobjectsaresometimesverysimilar.Thus,
+ weconsidermatchingfrombothdirections(i.e.,previous-to
+current andcurrent-to-previous) anddevelopabidirectional
+ greedymatchingtooutput thetrackingTϕasfollows(assum
+ingthatonlyDPisused):
+ Algorithm1Bi-GreedyMatching
+ Input:O≤t={ˆ o}G,Ot+1={o}K.
+ Output:Tϕ={(o,ϕ(o))}K forallo∈Ot+1
+ 1: T←∅
+ 2: Tϕ←∅
+ 3: forall ˆ o∈O≤t do
+ 4: o←argmin
+ o∈Ot+1
+ <pt+1(lt
+ ˆ o),lt+1 o >
+ 5: T←T∪(ˆ o,o)
+ 6: endfor
+ 7: forallo∈Ot+1do
+ 8: if any ˆ o,(ˆ o,o)∈T then
+ 9: ˆ o←argmin
+ ˆ o,(ˆ o,o)∈T
+ <pt+1(lt
+ ˆ o),lt+1 o >
+ 10: Tϕ←Tϕ∪(o,ˆ o)
+ 11: else
+ 12: Tϕ←Tϕ∪(o,Newˆ o)
+ 13: endif
+ 14: endfor
+ AsshowninAlgorithm1,ourproposedmatchingalgorithm
+ firstfinds thenearest instanceo∈Ot+1 inthecurrent frame
+ foreachprevioustrackedobject ˆ o∈O≤t.Theremayexisttwo
+ cases: (a)morethanonedifferentpreviousinstancemayhave
+ thesamenearestcurrent instanceo, thoseprevious instances
+ are collectedas candidate instances; (b) it is alsopossible
+ that somecurrent instancesarenotmarkedbyanyprevious
+ instances.Inthecase(a),forthiscurrentinstanceo,wefinally
+ getthematchedpreviousinstance ˆ obyfindingthenearestone
+ fromthosecandidateinstances. Inthecase(b), thosecurrent
+ instancesarejudgedasanewinstance.SinceG>Kinmost
+ cases, toruntraversalfistonO≤t isbetterthanOt+1because
+ it focusesonthematchedcurrent instanceso ∈Ot+1 rather
+ thanpreviousinstances thatarenot incurrent frame. Ineach
+ roundofmatching,inordertoavoidtheoccludedobjectsbeing
+ forgotten,weneed to re-match thenewlyemergedobjects.
+ Therefore,weadopt amatchingcascadealgorithm[78] that
+ givesprioritytomorefrequentlyappearingobjects toensure
+ thoseobjectsthatarebrieflyoccludedanddisappearedcanbe
+ re-identified.
+ 3)OccludedObjectMulti-StageMatching: Theoccluded
+ objectsoftengetalowconfidencelevelafterpassingthrough
+ thedetectionalgorithm.Theexistingalgorithmsonlysetasin
+gleconfidencelevel thresholdtodividethecorrectlydetected
+ targetandthewronglydetectedtarget.Thisapproachcauses
+ thetrackingofoccludedobjectstofail.Weintroduceamulti
+stagematchingmechanism, that istoset twolowerthresholds
+ ofconfidencescores,andtreat thedividedhigh-scoringdetec
+tiontargetsandlow-scoringdetectiontargetsdifferently,and
+ performtworoundsofmatchingrespectivelyin turn. In this
+ way,althoughtheconfidenceobtainedbytheoccludedobject
+ position is lower, it canstill besuccessfullymatched in the
+ secondroundofmatching.
+ 4)Spatio-TemporalDiscrepancy:Consideringthefact that
+ thespatio-temporalchangesonindividualobjectsshouldretain
+ areasonablerangeinvideos,weextendtheEq.8byadding
+ thespatio-temporaldiscrepancyfor tracking:
+ argmin
+ τ Ot+1
+ α1<pt+1(lt
+ ϕ(o)),lt+1
+ o >
+ +α2<Dt(lt
+ ϕ(o)),D(t+1)(lt+1
+ o )>
+ +α3<Ft(lt
+ ϕ(o)),F(t+1)(lt+1
+ o )> (9)
+ whereDt andFt denotesthedepthandopticalflowvaluesof
+ thediagonalpointsfor the trackedobjectoonthe tth frame.
+ α1,α2,α3 are the trade-offweights thatbalance these terms.
+ Thenewobjectiveessentiallyensures the trackedobjectsare
+ alignedwith the segmented instances among frames,while
+ at thesame timebeingconsistentwith their spatio-temporal
+ positions.Wedemonstrate the improvementsofour tracking
+ inSectionIV-F.
+ IV. EXPERIMENTS
+ A.Datasets
+ We evaluate STC-Seg on two benchmarks: KITTI
+ MOTS [10] andYT-VIS [11]. TheKITTIMOTScontains
+ 21 videos (12 for training and 9 for validation) focusing
+ on driving scenes. The YT-VIS contains 2,883 YouTube
+ video clipswith 131k object instances and 40 categories.
+ OnKITTIMOTS, themetricsareHOTA,sMOTSA,MOTSA,
+ andMOTSP from[75].OnYT-VIS, themetrics are:mAP
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ D. Implementation Details
+ 399
+ Fig. 4. The architecture of our mini network. We use the dilated convolution
+ layers to capture the spatial or temporal data difference between adjacent
+ pixels. The similarity measurement function δ(·,·) is implemented by a
+ residual module.
+ is the mean average precision for IoU between [0.5, 0.9],
+ AP@0.50 and AP@0.75 are average precision with IoU
+ threshold at 0.50 and 0.75, and AR@1 and AR@10 are
+ average recall for top 1 and 10 respectively.
+ B. Pseudo-Label Generation Network Architecture
+ In the pseudo-label generation of STC-Seg, unsupervised
+ Monodepth2 [68] and Upflow [69] are adopted for the depth
+ estimation and optical flow respectively. The depth and flow
+ outputs are fed into a mini network. The mini network is
+ composed of a 2D average pooling layer, dilated convolution
+ layers and a residual module, as shown in Fig. 4. In pre
+processing, we use a 2D average pooling layer to down-sample
+ the depth and the optical flow data. The kernel size and the
+ stride of the pooling layer are both set to 4 without padding.
+ After the 2D average pooling layer, dilated convolution is
+ applied since it enables networks to have larger receptive fields
+ with just a few layers. The dilation rate λ is set to 2 and the
+ kernel size is set to 3 in our experiments, so the padding size
+ is set to 2 to keep the output size equal to the input size.
+ The weight of the kernel is initialized as W =[wk1,k2
+ ]3×3,
+ where wk1,k2 
+∈{0,1}. After the dilated convolution layers,
+ the residual module subtracts the output of the pooling layer
+ from the output of the dilated convolution layers and applies an
+ exponential activation function. The final output of the residual
+ module can be written as δ(xi,j, xi ,j ) = er·||xi,j−xi ,j ||p in
+ Eq. 1, which represents the contextual similarity between
+ locations (i, j) and (i , j ) in the frame, where r is the
+ similarity factor. We use the Frobenius norm (p = 2) in this
+ contextual similarity calculation. The similarity factor r is set
+ to 0.5 in our experiments.
+ C. Main Network Architecture
+ Our segmentation network is crafted on CondInst [87] with
+ a few modifications. Following CondInst, we use the FCOS
+based network, which includes ResNet-50/101 backbones [88]
+ with FPN [89], a detection built on FCOS, and dynamic
+ mask heads. For the dynamic mask heads, we use three
+ convolution layers as in CondInst, but we increase the channels
+ from 8 to 16 as in [36], which results in better perfor
+mance with an affordable computational overhead. Without
+ any network parameter consumption, our tracking module
+ directly performs tracking over the output of the segmentation
+ network.
+ 1) Pseudo-Label Generation: To generate pseudo-labels,
+ unsupervised Monodepth2 [68] and Upflow [69] are adopted
+ for the depth estimation and optical flow respectively. The
+ Monodepth2 [68] is trained on the KITTI stereo dataset [90]
+ when we take experiments on KITTI MOTS. When using
+ the monocular sequences in KITTI stereo dataset for training,
+ we follow Zhou et al.’s [91] pre-processing to remove static
+ frames. This results in 39,810 monocular triplets (three tem
+porally adjacent frames) for training and 4,424 for validation.
+ We use a learning rate of 10−4 for the first 15 epochs
+ which is then dropped to 10−5 for the remainder. When
+ we take experiments on YT-VIS, the model is pre-trained
+ on NYU Depth dataset [92] with a learning rate 10−4.
+ Following [93], images are flipped horizontally with a 50%
+ chance, and randomly cropped and resized to 384 × 384 to
+ augment the data and maintain the aspect ratio across different
+ input images. Monodepth2 is finetuned on the YT-VIS with
+ a learning rate of 10−5 and an exponential decay rate of
+ β1 = 0.9,β2 = 0.999. The Upflow [69] is trained on KITTI
+ scene flow dataset [94] when we take experiments on KITTI
+ MOTS. KITTI scene flow dataset [94] consists of 28,058
+ image pairs (tth frame and (t − 1)th frame). Following [95],
+ the learning rate is set to 10−4 and the Adam optimizer is
+ used during training. When we take experiments on YT-VIS,
+ the Upflow [69] is pre-trained on FlyingThings [96] for 100k
+ iterations with a batch size of 12, then trained for 100k
+ iterations on FlyingThings3D [96] with a batch size of 6. The
+ learning rate of the above two stages is both set to 1.2×10−4.
+ The model is finetuned on YT-VIS for another 100k iteration
+ with a batch size of 6 and a learning rate of 10−4. Our mini
+ network includes 3 layers of dilated convolutions. For Eq.1,
+ the dilation rate λ is set to be 2 and the kernel size of dilation
+ convolution is set to be 3. The filter factors φs,φt are set to
+ be 0.3 and 0.4 respectively.
+ 2) STC-Seg Training and Inference: The STC-Seg is
+ implemented using PyTorch. It is trained with batch size
+ 8 using 4 NVIDIA GeForce GTX 2080 Ti GPUs (2 images
+ per GPU) with 16 workers. During training, the backbone
+ is pre-trained on ImageNet [97]. The newly added layers
+ are initialized as in FCOS [51]. Following CondInst, the
+ input images are resized to have a shorter side [640, 800]
+ and a longer side at a maximum of 1333. The same data
+ augmentation in CondInst [87] is used as well. For KITTI
+ MOTS, we remove 485 frames without any usable annotation
+ so there are 4510 frames left for training. For YTVIS, there
+ are 61341 frames used for training in total. Only left-right
+ f
+ lipping is used as the data augmentation during training.
+ Following CondInst [87], the output mask is up-sampled to
+ 1/4 resolution of the input image, and we only compute the
+ loss for top 64 mask proposals per image. For optimization,
+ we use a multi-step learning rate scheduler with a warm-up
+ strategy in the first epoch. In our multi-step learning rate
+ schedule, the base learning rate is set to be 10−4, which
+ starts to decay exponentially after a certain number of iter
+ations up to 2 × 10−5. In the warm-up epoch, the learning
+ rate is increased linearly from 0 to the base learning rate.
+ The base learning rate is set to be 10−4, which starts to
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+400
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ TABLE I
+ QUANTITATIVERESULTSON KITTIMOTSTESTSET. RESULTSFORFULLYSUPERVISEDMETHODSARERETRIEVEDFROM THE MOTS
+ BENCHMARK.FORWEAKLYSUPERVISEDMETHODSWISEANDIRN,THERESULTSAREOBTAINEDFROMTHEIRORIGINALCODES
+ COMBINEDWITHOURTRACKINGMODULE.STC-SEG50 ANDSTC-SEG101 INDICATEUSINGRESNET-50ANDRESNET-101
+ AS BACKBONERESPECTIVELY.ALLTHE BASELINEMETHODSUSERESNET-101WITHFPN
+ TABLE II
+ RESULTSONYT-VISVALIDATIONSET. METRICSFORSIPMASK[49]AREOBTAINEDFROM ITSORIGINALPAPER.
+ ALLOTHERCOMPAREDRESULTSARERETRIEVEDFROM[17].ALLMETHODSUSERESNET-50WITHFPN
+ decay exponentially after a certain number of iterations up to
+ 2×10−5. The exact number of iterations varies for each setting
+ as follows: (a) KITTI-MOTS: 10k total iterations, decay begins
+ after 5k iterations; (b) YouTube-VIS: 80k total iterations,
+ decay begins after 30k iterations. The momentum is set to 0.9.
+ The weight decay is set to 10−4, while it is not applied
+ to parameters of normalization layers. In inference, we can
+ directly perform instance segmentation on input video data
+ without using any extra information. The hyper-parameters
+ α1,α2,α3 are set to be 0.7, 0.2, and 0.1 respectively.
+ E. Main Results
+ 1) Quantitative Results: On the KITTI MOTS benchmark,
+ we compare our STC-Seg against the state-of-the-art baselines.
+ The results are presented in Table I. It can be seen that our
+ methods achieve competitive results under all evaluation met
+rics. Our STC-Seg with ResNet-50 significantly outperforms
+ all weakly supervised methods which use a stronger back
+bone (ResNet-101). In comparison with the fully supervised
+ methods, our method with ResNet-101 can still achieve rea
+sonable results. For example, it outperforms TrackR-CNN [10]
+ by 3.0% on HOTA, 2.3% on sMOTSA, 3.7% on MOTSA and
+ 0.1% on MOTSP for the car class. The results for pedestrian
+ class also are consistent. We further provide comparison
+ results of our STC-Seg with the state-of-the-art baselines
+ on YT-VIS in Table II. It can be seen that our method is
+ competitive with fully supervised MaskTrack R-CNN [11]
+ and SipMask [49]. When comparing with weakly supervised
+ methods, our method outperforms FlowIRN [17], IRN [22]
+ and WISE [13] with significant margins of 20.5%, 23.7%, and
+ 24.7% in terms of mAP metrics respectively.
+ 2) Qualitative Results: We compare qualitative results
+ of our method with those from fully supervised TrackR
+CNN [10] and MaskTrack R-CNN [11] on KITTI MOTS
+ and YT-VIS respectively. To demonstrate the advantages of
+ our approach, we select some challenging samples where
+ TrackR-CNN and MaskTrack R-CNN have weaker predictions
+ (see Fig. 5). In the KITTI MOTS examples, the masks
+ generated by Track RCNN have jagged boundaries or leave
+ false negative regions on the borders. In the YT-VIS exam
+ples, MaskTrack R-CNN struggles to depict the boundary of
+ instances with irregular shapes (e.g., eagle beak or tail). On the
+ other hand, it is clear that our method captures more accurate
+ instance boundaries.
+ 3) Discussion: The aforementioned results demonstrate the
+ strong performance of STC-Seg in videos. We thus argue
+ that it is effective to use the proposed pseudo-labels and
+ puzzle solver to supervise the mask generation, especially
+ for rigid objects (e.g., vehicles, boats, and planes). However,
+ we encounter notable performance degradation for non-rigid
+ objects (e.g., humans and animals) as the depth and flow
+ estimation become less accurate under the circumstance, which
+ compromises the corresponding pseudo-label generation for
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YANetal.: SOLVETHEPUZZLEOFINSTANCESEGMENTATIONINVIDEOS 401
+ Fig.5. QualitativeresultsofourSTC-SegincomparisonwithTrackR-CNN[10]andMaskTrackR-CNN[11]onKITTIMOTSandYT-VISrespectively.
+ AllcomparedmethodsuseResNet-101withFPN.
+ Fig. 6. Examples ofweakpredictions fromSTC-Seg. Thefirst rowis
+ fromKITTIMOTSandthesecondrowis fromYT-VIS.
+ supervision. For instances in Fig. 6, there are large false
+ positive regions betweenpedestrian legs (the top row); our
+ method fails to segment objects in front of theman (the
+ bottomrow).Theaboveweakpredictionsareprimarilycaused
+ bynoisypseudo-labelsincurredbyinaccuratedepthandflow
+ estimation.
+ F.AblationStudy
+ In this section, we investigate the effectiveness of each
+ component inSTC-Segbyconductingablationexperiments
+ onKITTIMOTS. For the assessment of our supervision
+ signalsandlossterms,wefocusontheimprovementofmask
+ generation and thus include the average precision (AP) in
+ evaluation.Toassessour tracking,weuseHOTA,MOTSA,
+ andMOTSPfromMOTS[75].
+ 1)SupervisionSignals:We showthe impact of progres
+sively integratingthedepthandflowsignals for thepseudo
+labelgeneration.AsshowninTableIII, comparedtooptical
+ flow,depthhasabetterperformanceforcarclass toproduce
+ pseudo-labels when being used alone, while optical flow
+ has a better performance for pedestrian class. In contrast,
+ by leveraging both depth and flow, we develop comple
+mentaryrepresentations that retainricher andmoreaccurate
+ detailsof the instanceboundaryforpseudo-labelgeneration
+ (seeFig. 7a).Therefore, combiningthe twosignals together
+ enablesourmodel toachieve thebest performanceover the
+ baselines thatusethemseparately.
+ 2)LossTerms:WefirstonlyuseourboxtermLbx(Ldice)
+ without the position penalty to supervise themask gener
+ation as our baseline, followed by the variants supervised
+ bydifferent loss combinations (seeTable IV).We achieve
+ immediate improvements of 2.8%(car) and 3.7%(pedes
+trian)onAPfor themodel trainedonlybyLbce+Lbx(Ldice)
+ over the baseline. While using BCE loss Lbce and our
+ Lbx(Ldice)forsupervision,wecanobtainfurtherperformance
+ gainover themodels trainedbyLbce+Lbx(Ldice). Thebest
+ results come from themodel trained by our puzzle loss
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+402
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ Fig. 7. Ablation study results: a). The pseudo-labels generated by depth signals (2nd column), optical flow signals (3rd column), and combination of both
+ (4th column); b). The same mask color indicates the same instance. The first row results are from CP [77], which often encounters the issue of ID switching.
+ The second row results are from ours, which is robust to object appearance changes.
+ TABLE III
+ THERESULTSOFUSINGDIFFERENTSUPERVISIONSIGNALSFROMKITTI
+ MOTS.CANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE IV
+ THERESULTSOFUSINGDIFFERENTLOSSTERMSFROM KITTIMOTS.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ Lbd+Lbx(Ldice), whose margins over the second best results
+ (Lbd+Lbx(Ldice)) by 1.4% (car) and 1.3% (pedestrian) on
+ AP. The above results confirm our assumption for our puzzle
+ loss design that the proposed box term and boundary term
+ can work collaboratively to generate a high-quality instance
+ mask.
+ 3) Mini Network Architecture: We also evaluate the impact
+ of using different configurations for the mini network. Specif
+ically, we vary the mini network depth (number of layers)
+ from the list of {1,2,3,4} with the fixed dilation rate λ
+ of 2 and dilation convolution kernel size 3. We also vary
+ the dilation rate λ of the mini network from {1,2,3}, and
+ use the grad search to determine the filter factors φs,φt.
+ The results are shown in Table V, Table VI and Table VII
+ TABLE V
+ THEIMPACTOFDIFFERENTMININETWORKDEPTHINKITTIMOTS.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE VI
+ THEIMPACTOFDIFFERENTMININETWORKDILATIONRATEINKITTI
+ MOTS.THEDEPTHOFTHEMININETWORKIS FIXEDTO3.
+ C ANDPDENOTEcar ANDpedestrian RESPECTIVELY
+ TABLE VII
+ THEIMPACTOFDIFFERENTMININETWORKFILTERFACTORSINKITTI
+ MOTS.THERESULTSAREOBTAINEDBYHOTAONCAR
+ ANDPEDESTRIANCATEGORYRESPECTIVELY
+ respectively. Those results show that a reasonable mini net
+work configuration can account for better supervision, where
+ the mini network includes 3 layers of dilated convolutions with
+ a dilation rate of 2 and a kernel size of 3. To achieve better
+ performances, the filter factors φs,φt are set to be 0.3 and 0.4
+ respectively.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ TABLE X
+ 403
+ TABLE VIII
+ THERESULTSOFUSINGDIFFERENTTRACKINGSTRATEGIESFROM
+ KITTIMOTS.CP,DP,ANDSDARESHORTFORCENTER
+ POINT,DIAGONALPOINTS, ANDSPATIO-TEMPORAL
+ DISCREPANCYRESPECTIVELY
+ TABLE IX
+ THECOMPARISONRESULTSONYT-VISVALIDATIONSET.*AND
+ † INDICATETHE USEOFTHEGROUNDTRUTHANDPSEUDO
+ LABELSRESPECTIVELYDURINGTRAINING.ALL
+ METHODSUSERESNET-101WITHFPN
+ 4) Tracking Strategy: We finally evaluate the impact of
+ using different elements for tracking (see Table VIII). For
+ CP, we use the state-of-the-art CenterTrack [77]. For DP,
+ we only use diagonal points in our tracking module. For
+ DP+SD, it uses both diagonal points and spatio-temporal
+ discrepancy. From the results we can see that DP provides
+ immediate improvements in tracking over the baseline that
+ uses CP. DP+SD further improves the tracking capacity
+ compared to DP, demonstrating strong tracking robustness
+ (see Fig. 7b). These results suggest that each element
+ (i.e. DP and SD) individually contributes towards improving
+ the tracking performance.
+ G. Extending Instance Segmentation to Videos
+ In this section, we evaluate the flexibility and generalization
+ of the proposed STC-Seg framework. In particular, we lever
+age our STC-Seg framework (i.e. pseudo-label generation,
+ puzzle solver, and tracking module) to extend image instance
+ segmentation methods to the video task. We select three widely
+ recognized instance segmentation methods, YOLACT [45],
+ BlendMask [50] and HTC [44]), and integrate with our STC
+Seg framework. The results of two set of experiments, i.e.
+ training with ground truth labels and pseudo labels, on YT-VIS
+ are shown in Table IX. Each of the selected methods is crafted
+ with our tracking module and uses the same implementation
+ as discussed in Section IV. It can be seen that methods
+ trained using the proposed pseudo-labels achieve comparable
+ results with the models trained on ground truth labels. This
+ observation is consistent among all three selected methods,
+ which demonstrates that our STC-Seg framework can flexibly
+ extend image instance segmentation methods to operate on
+ video tasks.
+ RESULTSOFUSINGGROUNDTRUTHSORNOTINSPATIO-TEMPORAL
+ SIGNALSGENERATIONWHENTRAININGOURSTC-SEGONKITTI
+ MOTS.“×”DENOTESSIGNALIS OBTAINEDFROM THE
+ PREDICTEDDEPTHORFLOW,WHILE“✓”DENOTES
+ SIGNALIS OBTAINEDFROM THEIRGROUND
+ TRUTH.CANDPDENOTEcar AND
+ pedestrian RESPECTIVELY
+ H. Results Using Ground Truth Depth and Flow
+ Since depth estimation and optical flow are critical factors
+ to generate our pseudo-label, we also directly employ the
+ ground truth depth and flow for the pseudo-label generation in
+ training to investigate the performance gap between using the
+ predicted spatio-temporal signals and ground truths. Table X
+ demonstrates the results on KITTI MOTS. We can see that
+ using depth and flow ground truths can further improve the
+ performance. Thus, we argue that with strong depth and flow
+ predictions, our method can achieve further performance gain.
+ V. CONCLUSION AND LIMITATION
+ Instance segmentation in videos is an important research
+ problem, which has been applied in a wide range of
+ vision applications. In this study, we propose a weakly
+ supervised learning method for instance segmentation in
+ videos with a spatio-temporal collaboration framework, titled
+ STC-Seg. In particular, we introduce a weakly supervised
+ training strategy which successfully combines unsupervised
+ spatio-temporal collaboration and weakly supervised signals,
+ helping networks to jointly achieve completeness and ade
+quacy for instance segmentation in videos without pixel-wised
+ labels. STC-Seg works in a plug-and-play manner and can
+ be nested in any segmentation network method. Extensive
+ experimental results indicate that STC-Seg is competitive
+ with the concurrent methods and outperforms fully supervised
+ MaskTrack R-CNN and TrackR-CNN. Albeit achieving strong
+ performance, our method requires box labels to operate train
+ing which limits its applicability to new tasks without any
+ prior knowledge. This challenge remains open for our future
+ research endeavors. There are several ongoing investigations.
+ For example, we are exploring unsupervised or weakly super
+vised object detection methods to obtain box labels. These
+ predicted box labels can then be used to predict instance
+ segmentation.
+ REFERENCES
+ [1] D.Liu,Y.Cui, L.Yan,C.Mousas,B.Yang, andY.Chen, “Denser
+Net: Weakly supervised visual localization using multi-scale feature
+ aggregation,” in Proc. AAAI Conf. Artif. Intell., 2021, vol. 35, no. 7,
+ pp. 6101–6109.
+ [2] Z. Cheng et al., “Physical attack on monocular depth estimation with
+ optimal adversarial patches,” in Proc. ECCV, 2022, pp. 1–27.
+ [3] J. Liang, Y. Wang, Y. Chen, B. Yang, and D. Liu, “A triangulation-based
+ visual localization for field robots,” IEEE/CAA J. Autom. Sinica,vol.9,
+ no. 6, pp. 1083–1086, Jun. 2022.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+404
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ [4] Y. Cui, L. Yan, Z. Cao, and D. Liu, “TF-blender: Temporal fea
+ture blender for video object detection,” in Proc. ICCV, Oct. 2021,
+ pp. 8138–8147.
+ [5] X. Lu, W. Wang, J. Shen, Y.-W. Tai, D. J. Crandall, and S. C. H. Hoi,
+ “Learning video object segmentation from unlabeled videos,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 8960–8970.
+ [6] F. Perazzi, J. Pont-Tuset, B. McWilliams, L. Van Gool, M. Gross, and
+ A. Sorkine-Hornung, “A benchmark dataset and evaluation methodology
+ for video object segmentation,” in Proc. IEEE Conf. Comput. Vis. Pattern
+ Recognit. (CVPR), Jun. 2016, pp. 724–732.
+ [7] F. Porikli, F. Bashir, and H. Sun, “Compressed domain video object
+ segmentation,” IEEE Trans. Circuits Syst. Video Technol., vol. 20, no. 1,
+ pp. 2–14, Jan. 2010.
+ [8] L. Zhao, Z. He, W. Cao, and D. Zhao, “Real-time moving object
+ segmentation and classification from HEVC compressed surveillance
+ video,” IEEE Trans. Circuits Syst. Video Technol., vol. 28, no. 6,
+ pp. 1346–1357, Jun. 2018.
+ [9] D. Liu, Y. Cui, W. Tan, and Y. Chen, “SG-Net: Spatial granu
+larity network for one-stage video instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021,
+ pp. 9816–9825.
+ [10] P. Voigtlaender et al., “MOTS: Multi-object tracking and segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 7942–7951.
+ [11] L. Yang, Y. Fan, and N. Xu, “Video instance segmentation,”
+ in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV), Oct. 2019,
+ pp. 5188–5197.
+ [12] A. Khoreva, R. Benenson, J. Hosang, M. Hein, and B. Schiele, “Simple
+ does it: Weakly supervised instance and semantic segmentation,” in
+ Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017,
+ pp. 876–885.
+ [13] I. H. Laradji, D. Vazquez, and M. Schmidt, “Where are the
+ masks: Instance segmentation with image-level supervision,” 2019,
+ arXiv:1907.01430.
+ [14] Y. Zhou, Y. Zhu, Q. Ye, Q. Qiu, and J. Jiao, “Weakly supervised instance
+ segmentation using class peak response,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit., Jun. 2018, pp. 3791–3800.
+ [15] L. Hoyer, D. Dai, Y. Chen, A. Koring, S. Saha, and L. Van Gool, “Three
+ ways to improve semantic segmentation with self-supervised depth
+ estimation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 11130–11140.
+ [16] F. Lin, H. Xie, Y. Li, and Y. Zhang, “Query-memory re-aggregation
+ for weakly-supervised video object segmentation,” in Proc. AAAI Conf.
+ Artif. Intell., 2021, vol. 35, no. 3, pp. 2038–2046.
+ [17] Q. Liu, V. Ramanathan, D. Mahajan, A. Yuille, and Z. Yang, “Weakly
+ supervised instance segmentation for videos with temporal mask con
+sistency,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 13968–13978.
+ [18] Q. Wang, L. Zhang, L. Bertinetto, W. Hu, and P. H. S. Torr, “Fast
+ online object tracking and segmentation: A unifying approach,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 1328–1338.
+ [19] Y. Wei, H. Xiao, H. Shi, Z. Jie, J. Feng, and T. S. Huang, “Revisiting
+ dilated convolution: A simple approach for weakly- and semi-supervised
+ semantic segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit., Jun. 2018, pp. 7268–7277.
+ [20] R. R. Selvaraju, M. Cogswell, A. Das, R. Vedantam, D. Parikh, and
+ D. Batra, “Grad-CAM: Visual explanations from deep networks via
+ gradient-based localization,” in Proc. IEEE Int. Conf. Comput. Vis.
+ (ICCV), Oct. 2017, pp. 618–626.
+ [21] B. Zhou, A. Khosla, A. Lapedriza, A. Oliva, and A. Torralba, “Learning
+ deep features for discriminative localization,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2016, pp. 2921–2929.
+ [22] J. Ahn, S. Cho, and S. Kwak, “Weakly supervised learning of instance
+ segmentation with inter-pixel relations,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 2209–2218.
+ [23] H. Cholakkal, G. Sun, F. S. Khan, and L. Shao, “Object counting
+ and instance segmentation with image-level supervision,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 12397–12405.
+ [24] Y. Zhu, Y. Zhou, H. Xu, Q. Ye, D. Doermann, and J. Jiao, “Learning
+ instance activation maps for weakly supervised instance segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 3116–3125.
+ [25] J. Ahn and S. Kwak, “Learning pixel-level semantic affinity with
+ image-level supervision for weakly supervised semantic segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+ pp. 4981–4990.
+ [26] J. Lee, E. Kim, S. Lee, J. Lee, and S. Yoon, “FickleNet: Weakly and
+ semi-supervised semantic image segmentation using stochastic infer
+ence,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2019, pp. 5267–5276.
+ [27] W. Yang, H. Huang, Z. Zhang, X. Chen, K. Huang, and S. Zhang,
+ “Towards rich feature discovery with class activation maps augmentation
+ for person re-identification,” in Proc. IEEE/CVF Conf. Comput. Vis.
+ Pattern Recognit. (CVPR), Jun. 2019, pp. 1389–1398.
+ [28] Y. Wang, J. Zhang, M. Kan, S. Shan, and X. Chen, “Self-supervised
+ equivariant attention mechanism for weakly supervised semantic seg
+mentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2020, pp. 12275–12284.
+ [29] Y. Cui et al., “DG-labeler and DGL-MOTS dataset: Boost the
+ autonomous driving perception,” in Proc. IEEE/CVF Winter Conf. Appl.
+ Comput. Vis. (WACV), Jan. 2022, pp. 58–67.
+ [30] Y. Chen et al., “BANet: Bidirectional aggregation network with occlu
+sion handling for panoptic segmentation,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020, pp. 3793–3802.
+ [31] J. Hur and S. Roth, “Joint optical flow and temporally consistent
+ semantic segmentation,” in Proc. Eur. Conf. Comput. Vis. Amsterdam,
+ The Netherlands: Springer, 2016, pp. 163–177.
+ [32] J. Dai, K. He, and J. Sun, “BoxSup: Exploiting bounding boxes to
+ supervise convolutional networks for semantic segmentation,” in Proc.
+ IEEE Int. Conf. Comput. Vis. (ICCV), Dec. 2015, pp. 1635–1643.
+ [33] C.-C. Hsu, K.-J. Hsu, C.-C. Tsai, Y.-Y. Lin, and Y.-Y. Chuang,
+ “Weakly supervised instance segmentation using the bounding box
+ tightness prior,” in Proc. Adv. Neural Inf. Process. Syst., vol. 32, 2019,
+ pp. 6586–6597.
+ [34] V. Kulharia, S. Chandra, A. Agrawal, P. Torr, and A. Tyagi, “Box2seg:
+ Attention weighted loss and discriminative feature learning for weakly
+ supervised segmentation,” in Proc. Eur. Conf. Comput. Vis. Glasgow,
+ U.K.: Springer, 2020, pp. 290–308.
+ [35] M. Rajchl et al., “DeepCut: Object segmentation from bounding box
+ annotations using convolutional neural networks,” IEEE Trans. Med.
+ Imag., vol. 36, no. 2, pp. 674–683, Jun. 2017.
+ [36] Z. Tian, C. Shen, X. Wang, and H. Chen, “BoxInst: High-performance
+ instance segmentation with box annotations,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021, pp. 5443–5452.
+ [37] A. Arun, C. Jawahar, and M. P. Kumar, “Weakly supervised instance
+ segmentation by learning annotation consistent instances,” in Proc. Eur.
+ Conf. Comput. Vis. Glasgow, U.K.: Springer, 2020, pp. 254–270.
+ [38] G. Papandreou, L.-C. Chen, K. P. Murphy, and A. L. Yuille, “Weakly
+and semi-supervised learning of a deep convolutional network for
+ semantic image segmentation,” in Proc. IEEE Int. Conf. Comput. Vis.
+ (ICCV), Dec. 2015, pp. 1742–1750.
+ [39] C. Song, Y. Huang, W. Ouyang, and L. Wang, “Box-driven class
+wise region masking and filling rate guided loss for weakly supervised
+ semantic segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit. (CVPR), Jun. 2019, pp. 3136–3145.
+ [40] W. Ge, S. Guo, W. Huang, and M. R. Scott, “Label-PEnet: Sequential
+ label propagation and enhancement networks for weakly supervised
+ instance segmentation,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.,
+ Oct. 2019, pp. 3345–3354.
+ [41] K. He, G. Gkioxari, P. Dollár, and R. Girshick, “Mask R-CNN,” in Proc.
+ IEEE Int. Conf. Comput. Vis., Oct. 2017, pp. 2961–2969.
+ [42] S. Liu, L. Qi, H. Qin, J. Shi, and J. Jia, “Path aggregation network for
+ instance segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+ Recognit., Jun. 2018, pp. 8759–8768.
+ [43] Z. Huang, L. Huang, Y. Gong, C. Huang, and X. Wang, “Mask scoring
+ R-CNN,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2019, pp. 6409–6418.
+ [44] K. Chen et al., “Hybrid task cascade for instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+ pp. 4974–4983.
+ [45] D. Bolya, C. Zhou, F. Xiao, and Y. J. Lee, “YOLACT: Real-time instance
+ segmentation,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV),
+ Oct. 2019, pp. 9157–9166.
+ [46] P. O. Pinheiro, T.-Y. Lin, R. Collobert, and P. Dollár, “Learning to refine
+ object segments,” in Proc. Eur. Conf. Comput. Vis. Amsterdam, The
+ Netherlands: Springer, 2016, pp. 75–91.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+YAN et al.: SOLVE THE PUZZLE OF INSTANCE SEGMENTATION IN VIDEOS
+ 405
+ [47] J. Dai, K. He, Y. Li, S. Ren, and J. Sun, “Instance-sensitive fully
+ convolutional networks,” in Proc. Eur. Conf. Comput. Vis. Amsterdam,
+ The Netherlands: Springer, 2016, pp. 534–549.
+ [48] S. Peng, W. Jiang, H. Pi, X. Li, H. Bao, and X. Zhou, “Deep snake
+ for real-time instance segmentation,” in Proc. IEEE/CVF Conf. Comput.
+ Vis. Pattern Recognit. (CVPR), Jun. 2020, pp. 8533–8542.
+ [49] J. Cao, R. M. Anwer, H. Cholakkal, F. S. Khan, Y. Pang, and
+ L. Shao, “SipMask: Spatial information preservation for fast image and
+ video instance segmentation,” in Proc. Eur. Conf. Comput. Vis., 2020,
+ pp. 1–18.
+ [50] H. Chen, K. Sun, Z. Tian, C. Shen, Y. Huang, and Y. Yan, “Blend
+Mask: Top-down meets bottom-up for instance segmentation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 8573–8581.
+ [51] Z. Tian, C. Shen, H. Chen, and T. He, “FCOS: Fully convolutional
+ one-stage object detection,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+ (ICCV), Oct. 2019, pp. 9627–9636.
+ [52] Y. Shen, R. Ji, Y. Wang, Y. Wu, and L. Cao, “Cyclic guidance for weakly
+ supervised joint detection and segmentation,” in Proc. IEEE/CVF Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 697–707.
+ [53] J. Pont-Tuset, P. Arbeláez, J. T. Barron, F. Marques, and J. Malik,
+ “Multiscale combinatorial grouping for image segmentation and object
+ proposal generation,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 39,
+ no. 1, pp. 128–140, Jan. 2017.
+ [54] J. Lee, J. Yi, C. Shin, and S. Yoon, “BBAM: Bounding box attribut
+ion map for weakly supervised semantic and instance segmentation,”
+ in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2021, pp. 2643–2652.
+ [55] Y. Liu, Y.-H. Wu, P. Wen, Y. Shi, Y. Qiu, and M.-M. Cheng, “Leveraging
+ instance-, image- and dataset-level information for weakly supervised
+ instance segmentation,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44,
+ no. 3, pp. 1415–1428, Mar. 2022.
+ [56] A. Athar, S. Mahadevan, A. Osep, L. Leal-Taixé, and B. Leibe, “STEm
+Seg: Spatio–temporal embeddings for instance segmentation in videos,”
+ in Proc. Eur. Conf. Comput. Vis. Springer, 2020, pp. 158–177.
+ [57] E. Xie et al., “PolarMask: Single shot instance segmentation with polar
+ representation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2020, pp. 12193–12202.
+ [58] W. Liu, G. Lin, T. Zhang, and Z. Liu, “Guided co-segmentation network
+ for fast video object segmentation,” IEEE Trans. Circuits Syst. Video
+ Technol., vol. 31, no. 4, pp. 1607–1617, Apr. 2021.
+ [59] L. Liu and G. Fan, “Combined key-frame extraction and object-based
+ video segmentation,” IEEE Trans. Circuits Syst. Video Technol., vol. 15,
+ no. 7, pp. 869–884, Jul. 2005.
+ [60] Y. Gui, Y. Tian, D.-J. Zeng, Z.-F. Xie, and Y.-Y. Cai, “Reliable and
+ dynamic appearance modeling and label consistency enforcing for fast
+ and coherent video object segmentation with the bilateral grid,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 30, no. 12, pp. 4781–4795,
+ Dec. 2020.
+ [61] F. Lin, H. Xie, C. Liu, and Y. Zhang, “Bilateral temporal re
+aggregation for weakly-supervised video object segmentation,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 32, no. 7, pp. 4498–4512,
+ Jul. 2022.
+ [62] L. Yan et al., “Video captioning using global-local representation,” IEEE
+ Trans. Circuits Syst. Video Technol., early access, May 23, 2022, doi:
+ 10.1109/TCSVT.2022.3177320.
+ [63] X. Shu, L. Zhang, G.-J. Qi, W. Liu, and J. Tang, “Spatiotempo
+ral co-attention recurrent neural networks for human-skeleton motion
+ prediction,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44, no. 6,
+ pp. 3300–3315, Jun. 2022.
+ [64] X. Shu, J. Yang, R. Yan, and Y. Song, “Expansion-squeeze
+excitation fusion network for elderly activity recognition,” IEEE
+ Trans. Circuits Syst. Video Technol., vol. 32, no. 8, pp. 5281–5292,
+ Aug. 2022.
+ [65] L. Yan et al., “GL-RG: Global-local representation granularity for video
+ captioning,” in Proc. IJCAI, Jul. 2022.
+ [66] B. Li, X. Li, Z. Zhang, and F. Wu, “Spatio–temporal graph routing for
+ skeleton-based action recognition,” in Proc. AAAI Conf. Artif. Intell.,
+ 2019, vol. 33, no. 1, pp. 8561–8568.
+ [67] Z. Qiu, T. Yao, and T. Mei, “Learning spatio–temporal representation
+ with pseudo-3D residual networks,” in Proc. IEEE Int. Conf. Comput.
+ Vis. (ICCV), Oct. 2017, pp. 5533–5541.
+ [68] C. Godard, O. M. Aodha, M. Firman, and G. Brostow, “Digging into
+ self-supervised monocular depth estimation,” in Proc. IEEE/CVF Int.
+ Conf. Comput. Vis. (ICCV), Oct. 2019, pp. 3827–3837.
+ [69] K. Luo, C. Wang, S. Liu, H. Fan, J. Wang, and J. Sun, “UPFlow:
+ Upsampling pyramid for unsupervised optical flow learning,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021,
+ pp. 1045–1054.
+ [70] F. Milletari, N. Navab, and S.-A. Ahmadi, “V-Net: Fully convolutional
+ neural networks for volumetric medical image segmentation,” in Proc.
+ 4th Int. Conf. 3D Vis. (DV), Oct. 2016, pp. 565–571.
+ [71] Y. Xu, L. Zhu, Y. Yang, and F. Wu, “Training robust object detectors
+ from noisy category labels and imprecise bounding boxes,” IEEE Trans.
+ Image Process., vol. 30, pp. 5782–5792, 2021.
+ [72] J. Shu et al., “Meta-weight-Net: Learning an explicit mapping for sample
+ weighting,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 32,
+ 2019, pp. 1–12.
+ [73] K.-H. Lee, X. He, L. Zhang, and L. Yang, “CleanNet: Transfer
+ learning for scalable image classifier training with label noise,” in
+ Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+ pp. 5447–5456.
+ [74] H. Li, Z. Wu, C. Zhu, C. Xiong, R. Socher, and L. S. Davis,
+ “Learning from noisy anchors for one-stage object detection,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 10588–10597.
+ [75] J. Luiten et al., “HOTA: A higher order metric for evaluating multi
+object tracking,” Int. J. Comput. Vis., vol. 129, no. 2, pp. 548–578, 2021.
+ [76] T. Yin, X. Zhou, and P. Krahenbuhl, “Center-based 3D object detection
+ and tracking,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2021, pp. 11784–11793.
+ [77] X. Zhou, V. Koltun, and P. Krähenbühl, “Tracking objects as points,” in
+ Proc. ECCV, 2020, pp. 474–490.
+ [78] N. Wojke, A. Bewley, and D. Paulus, “Simple online and realtime
+ tracking with a deep association metric,” in Proc. IEEE Int. Conf. Image
+ Process. (ICIP), Beijing, China, Sep. 2017, pp. 3645–3649.
+ [79] Z. Wang, L. Zheng, Y. Liu, Y. Li, and S. Wang, “Towards real-time
+ multi-object tracking,” in Proc. Eur. Conf. Comput. Vis. Glasgow, U.K.:
+ Springer, 2020, pp. 107–122.
+ [80] Y. Zhang, C. Wang, X. Wang, W. Zeng, and W. Liu, “Fairmot: On the
+ fairness of detection and re-identification in multiple object tracking,”
+ Int. J. Comput. Vis., vol. 129, no. 11, pp. 3069–3087, 2021.
+ [81] S. Qiao, Y. Zhu, H. Adam, A. Yuille, and L.-C. Chen, “ViP-DeepLab:
+ Learning visual perception with depth-aware video panoptic segmenta
+tion,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+ Jun. 2021, pp. 3997–4008.
+ [82] A. Kim, A. Osep, and L. Leal-Taixé, “EagerMOT: 3D multi-object
+ tracking via sensor fusion,” in Proc. IEEE Int. Conf. Robot. Autom.
+ (ICRA), May 2021, pp. 11315–11321.
+ [83] J. Luiten, T. Fischer, and B. Leibe, “Track to reconstruct and reconstruct
+ to track,” IEEE Robot. Autom. Lett., vol. 5, no. 2, pp. 1803–1810,
+ Apr. 2020.
+ [84] Z. Xu et al., “Segment as points for efficient online multi-object tracking
+ and segmentation,” in Proc. Eur. Conf. Comput. Vis. (ECCV), 2020,
+ pp. 264–281.
+ [85] B. Cheng, O. Parkhi, and A. Kirillov, “Pointly-supervised instance
+ segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.,
+ Jun. 2022, pp. 2617–2626.
+ [86] I. Ruiz, L. Porzi, S. R. Bulo, P. Kontschieder, and J. Serrat, “Weakly
+ supervised multi-object tracking and segmentation,” in Proc. IEEE
+ Winter Conf. Appl. Comput. Vis. Workshops (WACVW), Jan. 2021,
+ pp. 125–133.
+ [87] Z. Tian, C. Shen, and H. Chen, “Conditional convolutions for
+ instance segmentation,” in Proc. Eur. Conf. Comput. Vis., 2020,
+ pp. 282–298.
+ [88] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for
+ image recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit.
+ (CVPR), Jun. 2016, pp. 770–778.
+ [89] T.-Y. Lin, P. Dollár, R. Girshick, K. He, B. Hariharan, and S. Belongie,
+ “Feature pyramid networks for object detection,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 2117–2125.
+ [90] A. Geiger, P. Lenz, and R. Urtasun, “Are we ready for autonomous
+ driving? The KITTI vision benchmark suite,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit., Jun. 2012, pp. 3354–3361.
+ [91] T. Zhou, M. Brown, N. Snavely, and D. G. Lowe, “Unsupervised
+ learning of depth and ego-motion from video,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 1851–1858.
+ [92] N. Silberman, D. Hoiem, P. Kohli, and R. Fergus, “Indoor segmentation
+ and support inference from RGBD images,” in Proc. 12th Eur. Conf.
+ Comput. Vis., Florence, Italy, vol. 7576, Oct. 2012, pp. 746–760.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 
+406
+ IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 33, NO. 1, JANUARY 2023
+ [93] R. Ranftl, K. Lasinger, D. Hafner, K. Schindler, and V. Koltun, “Towards
+ robust monocular depth estimation: Mixing datasets for zero-shot cross
+dataset transfer,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 44, no. 3,
+ pp. 1623–1637, Mar. 2022.
+ [94] M. Menze and A. Geiger, “Object scene flow for autonomous vehicles,”
+ in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2015,
+ pp. 3061–3070.
+ [95] L. Liu et al., “Learning by analogy: Reliable supervision from
+ transformations for unsupervised optical flow estimation,” in Proc.
+ IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+ pp. 6489–6498.
+ [96] N. Mayer et al., “A large dataset to train convolutional networks for
+ disparity, optical flow, and scene flow estimation,” in Proc. IEEE Conf.
+ Comput. Vis. Pattern Recognit. (CVPR), Jun. 2016, pp. 4040–4048.
+ [97] J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei, “ImageNet:
+ A large-scale hierarchical image database,” in Proc. CVPR, Jun. 2009,
+ pp. 248–255.
+ Liqi Yan (Member, IEEE) received the bachelor’s
+ degree from the Beijing University of Posts and
+ Telecommunications. He is currently pursuing the
+ Ph.D. degree in computer science from Fudan Uni
+versity. He is also enrolled with the School of Engi
+neering, Westlake University. He is focusing on com
+bining the computer vision with natural language
+ processing on the platform of robotics. He has con
+ducted basic and applied research, including video
+ captioning, visual-language robotic navigation, and
+ visual geo-localization. He has coauthored over sev
+eral publications in top-tier conferences, including ICCV, AAAI, IJCAI,
+ IROS, and ICASSP. His current research interests include deep learning (DL),
+ computer vision (CV), robotic navigation, and natural language processing
+ (NLP). He has served as the Chair for the Westlake University ACM Student
+ Chapter.
+ Qifan Wang received the B.S. and M.S. degrees in
+ computer science from Tsinghua University and the
+ Ph.D. degree in computer science from Purdue Uni
+versity in 2015. He is currently a Research Scientist
+ at Meta AI, leading a team building innovative deep
+ learning and natural language processing models for
+ AI integrity. Before joining Meta, he worked as a
+ Research Engineer at Google Research, focusing on
+ deep domain representations and large-scale object
+ understanding. He also worked at Intel Labs for
+ two years. He has coauthored over 50 publications
+ in top-tier conferences and journals, including SIGKDD, SIGIR, WWW,
+ NeurIPS, IJCAI, AAAI, ACL, EMNLP, WSDM, CIKM, ECCV, IEEE
+ TRANSACTIONS ON PATTERN ANALYSIS AND MACHINE INTELLIGENCE,
+ IEEE TRANSACTIONS ON KNOWLEDGE AND DATA ENGINEERING, and
+ TOIS. His research interests include deep learning, natural language process
+ing, information retrieval, data mining, and computer vision. He also serves
+ as an area chair, a program committee member, an editorial board member,
+ and a reviewer for academic conferences and journals.
+ Siqi Ma received the master’s degree from
+ the Shanghai University of Technology in 2018.
+ He worked for a leading domestic technology AI
+ company after graduation and then continued his
+ research work at Westlake University. He is currently
+ working as a Research Assistant with the CAIRI
+ Laboratory, Westlake University, which focuses on
+ deep learning fundamental research, machine vision,
+ and interdisciplinary research in artificial intelli
+gence. His current research interests include machine
+ vision and machine learning interdisciplinary.
+ Jingang Wang received the Ph.D. degree in com
+puter science from the joint Ph.D. program between
+ the Beijing Institute of Technology and Purdue Uni
+versity in 2016. He is currently a Senior Algo
+rithm Expert and a Tech Lead of the Pre-Training
+ Team, NLP Center, Meituan. Before that, he was
+ a Senior Algorithm Engineer at Alibaba DAMO
+ Academy. His research interests include natural lan
+guage processing, information retrieval, and machine
+ translation.
+ Changbin Yu (Senior Member, IEEE) received the
+ B.Eng. degree (Hons.) from the NTU, Singapore,
+ and the Ph.D. degree from The Australian National
+ University (ANU) in 2008. He is currently an Aca
+demic Dean of AI at Shandong First Medical Uni
+versity, an Adjunct Professor with Fudan University,
+ and a Distinguished Visiting Professor with the
+ University of Johannesburg. He had previously held
+ tenured professorships at ANU, Westlake University,
+ and Curtin University. He was elected as a fellow
+ of the Institution of Engineers Australia (FIEAust)
+ in 2015. He received a John Booker Medal from the Australian Academy of
+ Science in 2019.
+ Authorized licensed use limited to: KLE Technological University. Downloaded on April 25,2024 at 05:35:54 UTC from IEEE Xplore.  Restrictions apply. 

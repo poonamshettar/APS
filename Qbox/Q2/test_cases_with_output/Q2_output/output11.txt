@@ -1,0 +1,434 @@
+ Students are thrilled to learn about how networking applications work—applications such as e-mail and the Web, which most students use on a daily basis.
+ The Web site also provides a number of detailed programming assignments, which include building a multithreaded Web server,  11  12  PREFACE  building an e-mail client with a GUI interface, programming the sender and receiver sides of a reliable data transport protocol, programming a distributed routing algorithm, and more.
+”  One Final Note: We’d Love to Hear from You We encourage students and instructors to e-mail us with any comments they might have about our book.
+ Send your e-mail to kurose@cs.
+ Not too long ago, these computing devices were primarily traditional desktop PCs, Linux workstations, and so-called servers that store and transmit information such as Web pages and e-mail messages.
+ They define protocols such as TCP, IP, HTTP (for the Web), and SMTP (for e-mail).
+ In addition to traditional applications such as e-mail and Web surfing, Internet applications include mobile smartphone and tablet applications, including Internet messaging, mapping with real-time road-traffic information, music streaming from the cloud, movie and television streaming, online social networks, video conferencing, multi-person games, and location-based recommendation systems.
+ Instead, the postal service requires that Alice put the letter in an envelope; write Bob’s full name, address, and zip code in the center of the envelope; seal the envelope; put a stamp in the upper-right-hand corner of the envelope; and finally, drop the envelope into an official postal service mailbox.
+, Web and e-mail servers), and mobile devices (e.
+ End systems are also referred to as hosts because they host (that is, run) application programs such as a Web browser program, a Web server program, an e-mail client program, or an e-mail server program.
+ End systems are also referred to as hosts because they host (that is, run) application programs such as a Web browser program, a Web server program, an e-mail client program, or an e-mail server program.
+ Informally, clients tend to be desktop and mobile PCs, smartphones, and so on, whereas servers tend to be more powerful machines that store and distribute Web pages, stream video, relay e-mail, and so on.
+ Today, most of the servers from which we receive search results, e-mail, Web pages, and videos reside in large data centers.
+2) or can contain data, such as an e-mail message, a JPEG image, or an MP3 audio file.
+3 A Network of Networks We saw earlier that end systems (PCs, smartphones, Web servers, mail servers, and so on) connect into the Internet via an access ISP.
+ The performance of many Internet applications—such as search, Web browsing, e-mail, maps, instant messaging, and voice-over-IP—are greatly affected by network delays.
+ The Internet’s application layer includes many protocols, such as the HTTP protocol (which provides for Web document request and transfer), SMTP (which provides for the transfer of e-mail messages), and FTP (which provides for the transfer of files between two end systems).
+ When the sending branch-office mailroom receives the interoffice envelope, it puts the interoffice envelope inside yet another envelope, which is suitable for sending through the public postal service.
+ The sending mailroom also writes the postal address of the sending and receiving branch offices on the postal envelope.
+6  •  NETWORKS UNDER ATTACK  postal envelope to the receiving branch-office mailroom.
+ The mailroom extracts the interoffice memo and forwards it to Bob.
+ Our compromised host may also be enrolled in a network of thousands of similarly compromised devices, collectively known as a botnet, which the bad guys control and leverage for spam e-mail distribution or distributed denial-of-service attacks (soon to be discussed) against targeted hosts.
+ The classic example is an e-mail attachment containing malicious executable code.
+ Typically, such e-mail viruses are self-replicating: once executed, the virus may send an identical message with an identical malicious attachment to, for example, every recipient in the user’s address book.
+ Web servers, e-mail servers, DNS servers (discussed in Chapter 2), and institutional networks can all be subject to DoS attacks.
+ Ray Tomlinson wrote the first e-mail program in 1972.
+ BITNET provided e-mail and file transfers among several universities in the Northeast.
+ By the end of the millennium the Internet was supporting hundreds of popular applications, including four killer applications: • E-mail, including attachments and Web-accessible e-mail • The Web, including Web browsing and Internet commerce • Instant messaging, with contact lists • Peer-to-peer file sharing of MP3s, pioneered by Napster Interestingly, the first two killer applications came from the research community, whereas the last two were created by a few young entrepreneurs.
+ By the end of the millennium the Internet was supporting hundreds of popular applications, including four killer applications: • E-mail, including attachments and Web-accessible e-mail • The Web, including Web browsing and Internet commerce • Instant messaging, with contact lists • Peer-to-peer file sharing of MP3s, pioneered by Napster Interestingly, the first two killer applications came from the research community, whereas the last two were created by a few young entrepreneurs.
+ As a result, Google provides search results and e-mail access almost instantaneously, as if their data centers were running within one’s own computer.
+, e-mail and Web hosting) to the cloud.
+ The harder part of the vision is to predict the applications and services, which have consistently surprised us in dramatic ways (e-mail, search technologies, the World Wide Web, blogs, social networks, user generation, and sharing of music, photos, and videos, etc.
+ Internet applications include the classic text-based applications that became popular in the 1970s and 1980s: text e-mail, remote access to computers, file transfers, and newsgroups.
+ We examine several network applications in detail, including the Web, e-mail, DNS, peer-to-peer (P2P) file distribution, and video streaming.
+ Some of the better-known applications with a client-server architecture include the Web, FTP, Telnet, and e-mail.
+, Amazon, eBay, Alibaba), Web-based e-mail (e.
+, Gmail and Yahoo Mail), social networking (e.
+3, Google has 30 to 50 data centers distributed around the world, which collectively handle search, YouTube, Gmail, and other services.
+  Addressing Processes In order to send postal mail to a particular destination, the destination needs to have an address.
+ A mail server process (using the SMTP protocol) is identified by port number 25.
+ For many applications—such as electronic mail, file transfer, remote host access, Web document transfers, and financial applications—data loss can have devastating consequences (in the latter case, for either the bank or the customer!).
+ Electronic mail, file transfer, and Web transfers are all elastic applications.
+ After the handshaking phase, a TCP connection is said to exist between the sockets Application  Data Loss  Throughput  Time-Sensitive  File transfer/download  No loss  Elastic  No  E-mail  No loss  Elastic  No  Web documents  No loss  Elastic (few kbps)  No  Internet telephony/ Video conferencing  Loss-tolerant  Audio: few kbps–1Mbps Video: 10 kbps–5 Mbps  Yes: 100s of msec  Streaming stored audio/video  Loss-tolerant  Same as above  Yes: few seconds  Interactive games  Loss-tolerant  Few kbps–10 kbps  Yes: 100s of msec  Smartphone messaging  No loss  Elastic  Yes and no  Figure 2.
+ We see that e-mail, remote terminal access, the Web, and file transfer all use TCP.
+  123  124  CHAPTER 2  •  APPLICATION LAYER  Application  Application-Layer Protocol  Underlying Transport Protocol  Electronic mail  SMTP [RFC 5321]  TCP  Remote terminal access  Telnet [RFC 854]  TCP  Web  HTTP [RFC 2616]  TCP  File transfer  FTP [RFC 959]  TCP  Streaming multimedia  HTTP (e.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ As another example, an Internet e-mail application also has many components, including mail servers that house user mailboxes; mail clients (such as Microsoft Outlook) that allow users to read and create messages; a standard for defining the structure of an e-mail message; and application-layer protocols that define how messages are passed between servers, how messages are passed between servers and mail clients, and how the contents of message headers are to be interpreted.
+ The principal application-layer protocol for electronic mail is SMTP (Simple Mail Transfer Protocol) [RFC 5321].
+ Thus, e-mail’s principal application-layer protocol, SMTP, is only one piece (albeit an important piece) of the e-mail application.
+ Thus, e-mail’s principal application-layer protocol, SMTP, is only one piece (albeit an important piece) of the e-mail application.
+ In this chapter we discuss five important applications: the Web, electronic mail, directory service video streaming, and P2P applications.
+ We then discuss electronic mail, the Internet’s first killer application.
+ E-mail is more complex than the Web in the sense that it makes use of not one but several application-layer protocols.
+ After e-mail, we cover DNS, which provides a directory service for the Internet.
+ Most users do not interact with DNS directly; instead, users invoke DNS indirectly through other applications (including the Web, file transfer, and electronic mail).
+2 The Web and HTTP Until the early 1990s the Internet was used primarily by researchers, academics, and university students to log in to remote hosts, to transfer files from local hosts to remote hosts and vice versa, to receive and send news, and to receive and send electronic mail.
+ And the Web and its protocols serve as a platform for YouTube, Web-based e-mail (such as Gmail), and most mobile Internet applications, including Instagram and Google Maps.
+ And the Web and its protocols serve as a platform for YouTube, Web-based e-mail (such as Gmail), and most mobile Internet applications, including Instagram and Google Maps.
+ If Susan also registers herself with Amazon—providing full name, e-mail address, postal address, and credit card information—Amazon can then include this information in its database, thereby associating Susan’s name with her identification number (and all of the pages she has visited at the site in the past!).
+ For example, when a user logs in to a Web-based e-mail application (such as Hotmail), the browser sends cookie information to the server, permitting the server to identify the user throughout the user’s session with the application.
+ For example, when a user logs in to a Web-based e-mail application (such as Hotmail), the browser sends cookie information to the server, permitting the server to identify the user throughout the user’s session with the application.
+3 Electronic Mail in the Internet Electronic mail has been around since the beginning of the Internet.
+ As with ordinary postal mail, e-mail is an asynchronous communication medium—people send and read messages when it is convenient for them, without having to coordinate with other people’s schedules.
+ As with ordinary postal mail, e-mail is an asynchronous communication medium—people send and read messages when it is convenient for them, without having to coordinate with other people’s schedules.
+ In contrast with postal mail, electronic mail is fast, easy to distribute, and inexpensive.
+ In contrast with postal mail, electronic mail is fast, easy to distribute, and inexpensive.
+ Modern e-mail has many powerful features, including messages with attachments, hyperlinks, HTMLformatted text, and embedded photos.
+ In this section, we examine the application-layer protocols that are at the heart of Internet e-mail.
+ But before we jump into an in-depth discussion of these protocols, let’s take a high-level view of the Internet mail system and its key components.
+14 presents a high-level view of the Internet mail system.
+ We see from this diagram that it has three major components: user agents, mail servers, and the Simple Mail Transfer Protocol (SMTP).
+ We now describe each of these components in the context of a sender, Alice, sending an e-mail message to a recipient, Bob.
+ Microsoft Outlook and Apple Mail are examples of user agents for e-mail.
+ When Alice is finished composing her message, her user agent sends the message to her mail server, where the message is placed in the mail server’s outgoing message queue.
+ When Alice is finished composing her message, her user agent sends the message to her mail server, where the message is placed in the mail server’s outgoing message queue.
+ When Bob wants to read a message, his user agent retrieves the message from his mailbox in his mail server.
+ When Bob wants to read a message, his user agent retrieves the message from his mailbox in his mail server.
+ Mail servers form the core of the e-mail infrastructure.
+ Each recipient, such as Bob, has a mailbox located in one of the mail servers.
+ Each recipient, such as Bob, has a mailbox located in one of the mail servers.
+ Bob’s mailbox manages and  2.
+3  •  ELECTRONIC MAIL IN THE INTERNET  Mail server User agent  SM  SMTP  TP  SM  TP  Mail server User agent  Mail server User agent  User agent  User agent User agent  Key: Outgoing message queue  User mailbox  Figure 2.
+14 ♦ A high-level view of the Internet e-mail system  maintains the messages that have been sent to him.
+ A typical message starts its journey in the sender’s user agent, travels to the sender’s mail server, and travels to the recipient’s mail server, where it is deposited in the recipient’s mailbox.
+ A typical message starts its journey in the sender’s user agent, travels to the sender’s mail server, and travels to the recipient’s mail server, where it is deposited in the recipient’s mailbox.
+ A typical message starts its journey in the sender’s user agent, travels to the sender’s mail server, and travels to the recipient’s mail server, where it is deposited in the recipient’s mailbox.
+ When Bob wants to access the messages in his mailbox, the mail server containing his mailbox authenticates Bob (with usernames and passwords).
+ When Bob wants to access the messages in his mailbox, the mail server containing his mailbox authenticates Bob (with usernames and passwords).
+ When Bob wants to access the messages in his mailbox, the mail server containing his mailbox authenticates Bob (with usernames and passwords).
+ Alice’s mail server must also deal with failures in Bob’s mail server.
+ Alice’s mail server must also deal with failures in Bob’s mail server.
+ If Alice’s server cannot deliver mail to Bob’s server, Alice’s server holds the message in a message queue and attempts to transfer the message later.
+ Reattempts are often done every 30 minutes or so; if there is no success after several days, the server removes the message and notifies the sender (Alice) with an e-mail message.
+ SMTP is the principal application-layer protocol for Internet electronic mail.
+ It uses the reliable data transfer service of TCP to transfer mail from the sender’s mail server to the recipient’s mail server.
+ It uses the reliable data transfer service of TCP to transfer mail from the sender’s mail server to the recipient’s mail server.
+ It uses the reliable data transfer service of TCP to transfer mail from the sender’s mail server to the recipient’s mail server.
+ As with most application-layer protocols, SMTP  145  146  CHAPTER 2  •  APPLICATION LAYER  has two sides: a client side, which executes on the sender’s mail server, and a server side, which executes on the recipient’s mail server.
+ As with most application-layer protocols, SMTP  145  146  CHAPTER 2  •  APPLICATION LAYER  has two sides: a client side, which executes on the sender’s mail server, and a server side, which executes on the recipient’s mail server.
+ Both the client and server sides of SMTP run on every mail server.
+ When a mail server sends mail to other mail servers, it acts as an SMTP client.
+ When a mail server sends mail to other mail servers, it acts as an SMTP client.
+ When a mail server sends mail to other mail servers, it acts as an SMTP client.
+ When a mail server receives mail from other mail servers, it acts as an SMTP server.
+ When a mail server receives mail from other mail servers, it acts as an SMTP server.
+ When a mail server receives mail from other mail servers, it acts as an SMTP server.
+1 SMTP SMTP, defined in RFC 5321, is at the heart of Internet electronic mail.
+ As mentioned above, SMTP transfers messages from senders’ mail servers to the recipients’ mail servers.
+ As mentioned above, SMTP transfers messages from senders’ mail servers to the recipients’ mail servers.
+ For example, it restricts the body (not just the headers) of all mail messages to simple 7-bit ASCII.
+ This restriction made sense in the early 1980s when transmission capacity was scarce and no one was e-mailing large attachments or large image, audio, or video files.
+ Alice invokes her user agent for e-mail, provides Bob’s e-mail address (for example, bob@someschool.
+ Alice invokes her user agent for e-mail, provides Bob’s e-mail address (for example, bob@someschool.
+ Alice’s user agent sends the message to her mail server, where it is placed in a message queue.
+ The client side of SMTP, running on Alice’s mail server, sees the message in the message queue.
+ It opens a TCP connection to an SMTP server, running on Bob’s mail server.
+ At Bob’s mail server, the server side of SMTP receives the message.
+ Bob’s mail server then places the message in Bob’s mailbox.
+ Bob’s mail server then places the message in Bob’s mailbox.
+ It is important to observe that SMTP does not normally use intermediate mail servers for sending mail, even when the two mail servers are located at opposite ends of the world.
+ It is important to observe that SMTP does not normally use intermediate mail servers for sending mail, even when the two mail servers are located at opposite ends of the world.
+ It is important to observe that SMTP does not normally use intermediate mail servers for sending mail, even when the two mail servers are located at opposite ends of the world.
+3  Alice’s mail server  1 Alice’s agent  2  3  ELECTRONIC MAIL IN THE INTERNET  Bob’s mail server 4 SMTP  6 5  Key: Message queue  User mailbox  Figure 2.
+3  Alice’s mail server  1 Alice’s agent  2  3  ELECTRONIC MAIL IN THE INTERNET  Bob’s mail server 4 SMTP  6 5  Key: Message queue  User mailbox  Figure 2.
+3  Alice’s mail server  1 Alice’s agent  2  3  ELECTRONIC MAIL IN THE INTERNET  Bob’s mail server 4 SMTP  6 5  Key: Message queue  User mailbox  Figure 2.
+ In particular, if Bob’s mail server is down, the message remains in Alice’s mail server and waits for a new attempt—the message does not get placed in some intermediate mail server.
+ In particular, if Bob’s mail server is down, the message remains in Alice’s mail server and waits for a new attempt—the message does not get placed in some intermediate mail server.
+ In particular, if Bob’s mail server is down, the message remains in Alice’s mail server and waits for a new attempt—the message does not get placed in some intermediate mail server.
+ Let’s now take a closer look at how SMTP transfers a message from a sending mail server to a receiving mail server.
+ Let’s now take a closer look at how SMTP transfers a message from a sending mail server to a receiving mail server.
+ First, the client SMTP (running on the sending mail server host) has TCP establish a connection to port 25 at the server SMTP (running on the receiving mail server host).
+ First, the client SMTP (running on the sending mail server host) has TCP establish a connection to port 25 at the server SMTP (running on the receiving mail server host).
+ During this SMTP handshaking phase, the SMTP client indicates the e-mail address of the sender (the person who generated the message) and the e-mail address of the recipient.
+ During this SMTP handshaking phase, the SMTP client indicates the e-mail address of the sender (the person who generated the message) and the e-mail address of the recipient.
+ Recipient ok DATA 354 Enter mail, end with ”.
+edu closing connection  In the example above, the client sends a message (“Do you like ketchup? How about pickles?”) from mail server crepes.
+fr to mail server hamburger.
+ We mention here that SMTP uses persistent connections: If the sending mail server has several messages to send to the same receiving mail server, it can send all of the messages over the same TCP connection.
+ We mention here that SMTP uses persistent connections: If the sending mail server has several messages to send to the same receiving mail server, it can send all of the messages over the same TCP connection.
+ To do this, issue telnet serverName 25 where serverName is the name of a local mail server.
+ When you do this, you are simply establishing a TCP connection between your local host and the mail server.
+ It will allow you to send an e-mail message to an arbitrary recipient via a local mail server.
+ It will allow you to send an e-mail message to an arbitrary recipient via a local mail server.
+ Both protocols are used to transfer files from one host to another: HTTP transfers files (also called objects) from a Web server to a Web client (typically a browser); SMTP transfers files (that is, e-mail messages) from one mail server to another mail server.
+ Both protocols are used to transfer files from one host to another: HTTP transfers files (also called objects) from a Web server to a Web client (typically a browser); SMTP transfers files (that is, e-mail messages) from one mail server to another mail server.
+ Both protocols are used to transfer files from one host to another: HTTP transfers files (also called objects) from a Web server to a Web client (typically a browser); SMTP transfers files (that is, e-mail messages) from one mail server to another mail server.
+ On the other hand, SMTP is primarily a push protocol—the sending mail server pushes the file to the receiving mail server.
+ On the other hand, SMTP is primarily a push protocol—the sending mail server pushes the file to the receiving mail server.
+3 Mail Message Formats When Alice writes an ordinary snail-mail letter to Bob, she may include all kinds of peripheral header information at the top of the letter, such as Bob’s address, her own return address, and the date.
+ Similarly, when an e-mail message is sent from one person to another, a header containing peripheral information precedes the body of the message itself.
+ RFC 5322 specifies the exact format for mail header lines as well as their semantic interpretations.
+ The commands in that section were part of the SMTP handshaking protocol; the header lines examined in this section are part of the mail message itself.
+ You should use Telnet to send a message to a mail server that contains some header lines, including the Subject: header line.
+4 Mail Access Protocols Once SMTP delivers the message from Alice’s mail server to Bob’s mail server, the message is placed in Bob’s mailbox.
+4 Mail Access Protocols Once SMTP delivers the message from Alice’s mail server to Bob’s mail server, the message is placed in Bob’s mailbox.
+4 Mail Access Protocols Once SMTP delivers the message from Alice’s mail server to Bob’s mail server, the message is placed in Bob’s mailbox.
+ Throughout this discussion we have tacitly assumed that Bob reads his mail by logging onto the server host and then executing a mail reader that runs on that host.
+ Throughout this discussion we have tacitly assumed that Bob reads his mail by logging onto the server host and then executing a mail reader that runs on that host.
+ But today, mail access uses a client-server architecture—the typical user reads e-mail with a client that executes on the user’s end system, for example, on an office PC, a laptop, or a smartphone.
+ But today, mail access uses a client-server architecture—the typical user reads e-mail with a client that executes on the user’s end system, for example, on an office PC, a laptop, or a smartphone.
+ By executing a mail client on a local PC, users enjoy a rich set of features, including the ability to view multimedia messages and attachments.
+ Given that Bob (the recipient) executes his user agent on his local PC, it is natural to consider placing a mail server on his local PC as well.
+ With this approach, Alice’s mail server would dialogue directly with Bob’s PC.
+ Recall that a mail server manages mailboxes and runs the client and server sides of SMTP.
+ Recall that a mail server manages mailboxes and runs the client and server sides of SMTP.
+ If Bob’s mail server were to reside on his local PC, then Bob’s PC would have to remain always on, and connected to the Internet, in order to receive new mail, which can arrive at any time.
+ If Bob’s mail server were to reside on his local PC, then Bob’s PC would have to remain always on, and connected to the Internet, in order to receive new mail, which can arrive at any time.
+ Instead, a typical user runs a user agent on the local PC but accesses its mailbox stored on an always-on shared mail server.
+ Instead, a typical user runs a user agent on the local PC but accesses its mailbox stored on an always-on shared mail server.
+ This mail server is shared with other users and is typically maintained by the user’s ISP (for example, university or company).
+ Now let’s consider the path an e-mail message takes when it is sent from Alice to Bob.
+ We just learned that at some point along the path the e-mail message needs to be deposited in Bob’s mail server.
+ We just learned that at some point along the path the e-mail message needs to be deposited in Bob’s mail server.
+ This could be done simply by having Alice’s user agent send the message directly to Bob’s mail server.
+ And this could be done with SMTP—indeed, SMTP has been designed for pushing e-mail from one host to another.
+ However, typically the sender’s user agent does not dialogue directly with the recipient’s mail server.
+16, Alice’s user agent uses SMTP to push the e-mail message into her mail server, then Alice’s mail server uses SMTP (as an SMTP client) to relay the e-mail message to Bob’s mail server.
+16, Alice’s user agent uses SMTP to push the e-mail message into her mail server, then Alice’s mail server uses SMTP (as an SMTP client) to relay the e-mail message to Bob’s mail server.
+16, Alice’s user agent uses SMTP to push the e-mail message into her mail server, then Alice’s mail server uses SMTP (as an SMTP client) to relay the e-mail message to Bob’s mail server.
+16, Alice’s user agent uses SMTP to push the e-mail message into her mail server, then Alice’s mail server uses SMTP (as an SMTP client) to relay the e-mail message to Bob’s mail server.
+16, Alice’s user agent uses SMTP to push the e-mail message into her mail server, then Alice’s mail server uses SMTP (as an SMTP client) to relay the e-mail message to Bob’s mail server.
+ Why the two-step procedure? Primarily because without relaying through Alice’s mail server, Alice’s user agent doesn’t have any recourse to an unreachable destination  2.
+3  Alice’s mail server Alice’s agent  SMTP  •  ELECTRONIC MAIL IN THE INTERNET  Bob’s mail server SMTP  POP3, IMAP, or HTTP  Bob’s agent  Figure 2.
+3  Alice’s mail server Alice’s agent  SMTP  •  ELECTRONIC MAIL IN THE INTERNET  Bob’s mail server SMTP  POP3, IMAP, or HTTP  Bob’s agent  Figure 2.
+16 ♦ E-mail protocols and their communicating entities mail server.
+16 ♦ E-mail protocols and their communicating entities mail server.
+ By having Alice first deposit the e-mail in her own mail server, Alice’s mail server can repeatedly try to send the message to Bob’s mail server, say every 30 minutes, until Bob’s mail server becomes operational.
+ By having Alice first deposit the e-mail in her own mail server, Alice’s mail server can repeatedly try to send the message to Bob’s mail server, say every 30 minutes, until Bob’s mail server becomes operational.
+ By having Alice first deposit the e-mail in her own mail server, Alice’s mail server can repeatedly try to send the message to Bob’s mail server, say every 30 minutes, until Bob’s mail server becomes operational.
+ By having Alice first deposit the e-mail in her own mail server, Alice’s mail server can repeatedly try to send the message to Bob’s mail server, say every 30 minutes, until Bob’s mail server becomes operational.
+ By having Alice first deposit the e-mail in her own mail server, Alice’s mail server can repeatedly try to send the message to Bob’s mail server, say every 30 minutes, until Bob’s mail server becomes operational.
+ (And if Alice’s mail server is down, then she has the recourse of complaining to her system administrator!) The SMTP RFC defines how the SMTP commands can be used to relay a message across multiple SMTP servers.
+ But there is still one missing piece to the puzzle! How does a recipient like Bob, running a user agent on his local PC, obtain his messages, which are sitting in a mail server within Bob’s ISP? Note that Bob’s user agent can’t use SMTP to obtain the messages because obtaining the messages is a pull operation, whereas SMTP is a push protocol.
+ The puzzle is completed by introducing a special mail access protocol that transfers messages from Bob’s mail server to his local PC.
+ The puzzle is completed by introducing a special mail access protocol that transfers messages from Bob’s mail server to his local PC.
+ There are currently a number of popular mail access protocols, including Post Office Protocol—Version 3 (POP3), Internet Mail Access Protocol (IMAP), and HTTP.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+16 provides a summary of the protocols that are used for Internet mail: SMTP is used to transfer mail from the sender’s mail server to the recipient’s mail server; SMTP is also used to transfer mail from the sender’s user agent to the sender’s mail server.
+ A mail access protocol, such as POP3, is used to transfer mail from the recipient’s mail server to the recipient’s user agent.
+ A mail access protocol, such as POP3, is used to transfer mail from the recipient’s mail server to the recipient’s user agent.
+ A mail access protocol, such as POP3, is used to transfer mail from the recipient’s mail server to the recipient’s user agent.
+  POP3 POP3 is an extremely simple mail access protocol.
+ POP3 begins when the user agent (the client) opens a TCP connection to the mail server (the server) on port 110.
+ During the second phase, transaction, the user agent retrieves messages; also during this phase, the user agent can mark messages for deletion, remove deletion marks, and obtain mail statistics.
+ The third phase, update, occurs after the client has issued the quit command, ending the POP3 session; at this time, the mail server deletes the messages that were marked for deletion.
+ Suppose that mailServer is the name of your mail server.
+ Suppose that mailServer is the name of your mail server.
+ You will see something like: telnet mailServer 110 +OK POP3 server ready user bob +OK pass hungry +OK user successfully logged on If you misspell a command, the POP3 server will reply with an -ERR message.
+ As an example, suppose the user has two messages in his or her mailbox.
+ In the dialogue below, C: (standing for client) is the user agent and S: (standing for server) is the mail server.
+3  •  ELECTRONIC MAIL IN THE INTERNET  C: quit S: +OK POP3 server signing off The user agent first asks the mail server to list the size of each of the stored messages.
+ After processing the quit command, the POP3 server enters the update phase and removes messages 1 and 2 from the mailbox.
+ A problem with this download-and-delete mode is that the recipient, Bob, may be nomadic and may want to access his mail messages from multiple machines, for example, his office PC, his home PC, and his portable computer.
+ The download- anddelete mode partitions Bob’s mail messages over these three machines; in particular, if Bob first reads a message on his office PC, he will not be able to reread the message from his portable at home later in the evening.
+ In the download-and-keep mode, the user agent leaves the messages on the mail server after downloading them.
+ During a POP3 session between a user agent and the mail server, the POP3 server maintains some state information; in particular, it keeps track of which user messages have been marked deleted.
+  IMAP With POP3 access, once Bob has downloaded his messages to the local machine, he can create mail folders and move the downloaded messages into the folders.
+ Like POP3, IMAP is a mail access protocol.
+ This feature is useful when there is a low-bandwidth connection (for example, a slow-speed modem link) between the user agent and its mail server.
+ With a low-bandwidth connection, the user may not want to download all of the messages in its mailbox, particularly avoiding long messages that might contain, for example, an audio or video clip.
+  Web-Based E-Mail More and more users today are sending and accessing their e-mail through their Web browsers.
+ Hotmail introduced Web-based access in the mid 1990s.
+ Now Web-based e-mail is also provided by Google, Yahoo!, as well as just about every major university and corporation.
+ With this service, the user agent is an ordinary Web browser, and the user communicates with its remote mailbox via HTTP.
+ When a recipient, such as Bob, wants to access a message in his mailbox, the e-mail message is sent from Bob’s mail server to Bob’s browser using the HTTP protocol rather than the POP3 or IMAP protocol.
+ When a recipient, such as Bob, wants to access a message in his mailbox, the e-mail message is sent from Bob’s mail server to Bob’s browser using the HTTP protocol rather than the POP3 or IMAP protocol.
+ When a recipient, such as Bob, wants to access a message in his mailbox, the e-mail message is sent from Bob’s mail server to Bob’s browser using the HTTP protocol rather than the POP3 or IMAP protocol.
+ When a sender, such as Alice, wants to send an e-mail message, the e-mail message is sent from her browser to her mail server over HTTP rather than over SMTP.
+ When a sender, such as Alice, wants to send an e-mail message, the e-mail message is sent from her browser to her mail server over HTTP rather than over SMTP.
+ When a sender, such as Alice, wants to send an e-mail message, the e-mail message is sent from her browser to her mail server over HTTP rather than over SMTP.
+ Alice’s mail server, however, still sends messages to, and receives messages from, other mail servers using SMTP.
+ Alice’s mail server, however, still sends messages to, and receives messages from, other mail servers using SMTP.
+ For obvious reasons, it is highly desirable that e-mail addresses be mnemonic.
+ For example, if Bob has an account with Yahoo Mail, Bob’s e-mail address might be as simple as bob@yahoo.
+mail.
+ However, the hostname of the Yahoo mail server is more complicated and much less mnemonic than simply yahoo.
+ DNS can be invoked by a mail application to obtain the canonical hostname for a supplied alias hostname as well as the IP address of the host.
+ In fact, the MX record (see below) permits a company’s mail server and Web server to have identical (aliased) hostnames; for example, a company’s Web server and mail server can both be called enterprise.
+ In fact, the MX record (see below) permits a company’s mail server and Web server to have identical (aliased) hostnames; for example, a company’s Web server and mail server can both be called enterprise.
+ DNS rotation is also used for e-mail so that multiple mail servers can have the same alias name.
+ DNS rotation is also used for e-mail so that multiple mail servers can have the same alias name.
+ In another sense, however, the role of the DNS is quite different from Web, file transfer, and e-mail applications.
+ Suppose that some application (such as a Web browser or a mail reader) running in a user’s host needs to translate a hostname to an IP address.
+ A single DNS server would have to handle all DNS queries (for all the HTTP requests and e-mail messages generated from hundreds of millions of hosts).
+ Every organization with publicly accessible hosts (such as Web servers and mail servers) on the Internet must provide publicly accessible DNS records that map the names of those hosts to IP addresses.
+ • If Type=MX, then Value is the canonical name of a mail server that has an alias hostname Name.
+com, mail.
+ MX records allow the hostnames of mail servers to have simple aliases.
+ Note that by using the MX record, a company can have the same aliased name for its mail server and for one of its other servers (such as its Web server).
+ To obtain the canonical name for the mail server, a DNS client would query for an MX record; to obtain the canonical name for the other server, the DNS client would query for the CNAME record.
+ This section includes (1) a name field that contains the name that is being queried, and (2) a type field that indicates the type of question being asked about the name—for example, a host address associated with a name (Type A) or the mail server for a name (Type MX).
+ For example, the answer field in a reply to an MX query contains a resource record providing the canonical hostname of a mail server.
+ The additional section contains a Type A record providing the IP address for the canonical hostname of the mail server.
+com and the Type MX resource record for your mail server mail.
+com and the Type MX resource record for your mail server mail.
+4  •  DNS—THE INTERNET’S DIRECTORY SERVICE  FOCUS ON SECURITY D N S VULNERABILIT IES We have seen that DNS is a critical component of the Internet infrastructure, with many important services—including the Web and e-mail—simply incapable of functioning without it.
+) Once all of these steps are completed, people will be able to visit your Web site and send e-mail to the employees at your company.
+5 Peer-to-Peer File Distribution The applications described in this chapter thus far—including the Web, e-mail, and DNS—all employ client-server architectures with significant reliance on always-on infrastructure servers.
+6  •  VIDEO STREAMING AND CONTENT DISTRIBUTION NETWORKS  CASE STUDY G OOGLE’ S NET W O RK INF RAST RU C TUR E To support its vast array of cloud services—including search, Gmail, calendar, YouTube video, maps, documents, and social networks—Google has deployed an extensive private network and CDN infrastructure.
+ These mega data centers are responsible for serving dynamic (and often personalized) content, including search results and Gmail messages.
+ Here, UDPServer will make use of this address information, as it provides a return address, similar to the return address with ordinary postal mail.
+ We’ve studied these important application-level protocols, and their corresponding associated applications (the Web, file transfer, e-mail, and DNS) in some detail.
+ Are there any constraints on the format of the HTTP body? What about the email message body sent with SMTP? How can arbitrary data be transmitted over SMTP?  199  200  CHAPTER 2  •  APPLICATION LAYER  R16.
+ Suppose Alice, with a Web-based e-mail account (such as Hotmail or Gmail), sends a message to Bob, who accesses his mail from his mail server using POP3.
+ Suppose Alice, with a Web-based e-mail account (such as Hotmail or Gmail), sends a message to Bob, who accesses his mail from his mail server using POP3.
+ Suppose Alice, with a Web-based e-mail account (such as Hotmail or Gmail), sends a message to Bob, who accesses his mail from his mail server using POP3.
+ Suppose Alice, with a Web-based e-mail account (such as Hotmail or Gmail), sends a message to Bob, who accesses his mail from his mail server using POP3.
+ Suppose Alice, with a Web-based e-mail account (such as Hotmail or Gmail), sends a message to Bob, who accesses his mail from his mail server using POP3.
+ Print out the header of an e-mail message you have recently received.
+ Assume you have multiple devices, and you connect to your email provider using POP3.
+ Can your email client tell if you have already read the message in this scenario? R19.
+ Why are MX records needed? Would it not be enough to use a CNAME record? (Assume the email client looks up email addresses through a Type A query and that the target host only runs an email server.
+ Why are MX records needed? Would it not be enough to use a CNAME record? (Assume the email client looks up email addresses through a Type A query and that the target host only runs an email server.
+ Why are MX records needed? Would it not be enough to use a CNAME record? (Assume the email client looks up email addresses through a Type A query and that the target host only runs an email server.
+ Describe a few scenarios in which mail access protocols are not needed.
+ What does MTA stand for? Consider the following received spam e-mail (modified from a real spam e-mail).
+ What does MTA stand for? Consider the following received spam e-mail (modified from a real spam e-mail).
+ Assuming only the originator of this spam e-mail is malicious and all other hosts are honest, identify the malacious host that has generated this spam e-mail.
+ Assuming only the originator of this spam e-mail is malicious and all other hosts are honest, identify the malacious host that has generated this spam e-mail.
+com> Received: from barmail.
+edu (barmail.
+1]) by barmail.
+177]) by barmail.
+ Consider accessing your e-mail with POP3.
+ Suppose you have configured your POP mail client to operate in the download-and-delete mode.
+ Suppose you have configured your POP mail client to operate in the download-and-keep mode.
+ Suppose you have configured your POP mail client to operate in the download-and-keep mode.
+ Using your transcript in part (b), suppose you retrieve messages 1 and 2, exit POP, and then five minutes later you again access POP to retrieve new e-mail.
+  Assignment 3: Mail Client The goal of this programming assignment is to create a simple mail client that sends e-mail to any recipient.
+  Assignment 3: Mail Client The goal of this programming assignment is to create a simple mail client that sends e-mail to any recipient.
+ Your client will need to establish a TCP connection with a mail server (e.
+, a Google mail server), dialogue with the mail server using the SMTP protocol, send an e-mail message to a recipient (e.
+, a Google mail server), dialogue with the mail server using the SMTP protocol, send an e-mail message to a recipient (e.
+, a Google mail server), dialogue with the mail server using the SMTP protocol, send an e-mail message to a recipient (e.
+, your friend) via the mail server, and finally close the TCP connection with the mail server.
+, your friend) via the mail server, and finally close the TCP connection with the mail server.
+ Your job is to complete the code and test your client by sending e-mail to different user accounts.
+ You may also try sending through different servers (for example, through a Google mail server and through your university mail server).
+ You may also try sending through different servers (for example, through a Google mail server and through your university mail server).
+ Netscape also developed the Secure Sockets Layer (SSL) protocol and many Internet server products, including mail servers and SSL-based Web servers.
+ (These kids would save a lot of money if they had e-mail!) In each of the households there is one kid—Ann in the West Coast house and Bill in the East Coast house—responsible for mail collection and mail distribution.
+ (These kids would save a lot of money if they had e-mail!) In each of the households there is one kid—Ann in the West Coast house and Bill in the East Coast house—responsible for mail collection and mail distribution.
+ (These kids would save a lot of money if they had e-mail!) In each of the households there is one kid—Ann in the West Coast house and Bill in the East Coast house—responsible for mail collection and mail distribution.
+ Each week Ann visits all her brothers and sisters, collects the mail, and gives the mail to a postal-service mail carrier, who makes daily visits to the house.
+ Each week Ann visits all her brothers and sisters, collects the mail, and gives the mail to a postal-service mail carrier, who makes daily visits to the house.
+ Each week Ann visits all her brothers and sisters, collects the mail, and gives the mail to a postal-service mail carrier, who makes daily visits to the house.
+ When letters arrive at the West Coast house, Ann also has the job of distributing the mail to her brothers and sisters.
+ In this example, the postal service provides logical communication between the two houses—the postal service moves mail from house to house, not from person to person.
+ On the other hand, Ann and Bill provide logical communication among the cousins—Ann and Bill pick up mail from, and deliver mail to, their brothers and sisters.
+ On the other hand, Ann and Bill provide logical communication among the cousins—Ann and Bill pick up mail from, and deliver mail to, their brothers and sisters.
+ Note that from the cousins’ perspective, Ann and Bill are the mail service, even though Ann and Bill are only a part (the end-system part) of the end-to-end delivery process.
+ This household example serves as a nice analogy for explaining how the transport layer relates to the network layer: application messages = letters in envelopes processes = cousins hosts (also called end systems) = houses transport-layer protocol = Ann and Bill network-layer protocol = postal service (including mail carriers) Continuing with this analogy, note that Ann and Bill do all their work within their respective homes; they are not involved, for example, in sorting mail in any intermediate mail center or in moving mail from one mail center to another.
+ This household example serves as a nice analogy for explaining how the transport layer relates to the network layer: application messages = letters in envelopes processes = cousins hosts (also called end systems) = houses transport-layer protocol = Ann and Bill network-layer protocol = postal service (including mail carriers) Continuing with this analogy, note that Ann and Bill do all their work within their respective homes; they are not involved, for example, in sorting mail in any intermediate mail center or in moving mail from one mail center to another.
+ This household example serves as a nice analogy for explaining how the transport layer relates to the network layer: application messages = letters in envelopes processes = cousins hosts (also called end systems) = houses transport-layer protocol = Ann and Bill network-layer protocol = postal service (including mail carriers) Continuing with this analogy, note that Ann and Bill do all their work within their respective homes; they are not involved, for example, in sorting mail in any intermediate mail center or in moving mail from one mail center to another.
+ This household example serves as a nice analogy for explaining how the transport layer relates to the network layer: application messages = letters in envelopes processes = cousins hosts (also called end systems) = houses transport-layer protocol = Ann and Bill network-layer protocol = postal service (including mail carriers) Continuing with this analogy, note that Ann and Bill do all their work within their respective homes; they are not involved, for example, in sorting mail in any intermediate mail center or in moving mail from one mail center to another.
+ This household example serves as a nice analogy for explaining how the transport layer relates to the network layer: application messages = letters in envelopes processes = cousins hosts (also called end systems) = houses transport-layer protocol = Ann and Bill network-layer protocol = postal service (including mail carriers) Continuing with this analogy, note that Ann and Bill do all their work within their respective homes; they are not involved, for example, in sorting mail in any intermediate mail center or in moving mail from one mail center to another.
+ Continuing with our family saga, suppose now that when Ann and Bill go on vacation, another cousin pair—say, Susan and Harvey—substitute for them and provide the household-internal collection and delivery of mail.
+ Being younger kids, Susan and Harvey pick up and drop off the mail less frequently and occasionally lose letters (which are sometimes chewed up by the family dog).
+ For example, if the postal service doesn’t provide a maximum bound on how long it can take to deliver mail between the two houses (for example, three days), then there is no way that Ann and Bill can guarantee a maximum delay for mail delivery between any of the cousin pairs.
+ For example, if the postal service doesn’t provide a maximum bound on how long it can take to deliver mail between the two houses (for example, three days), then there is no way that Ann and Bill can guarantee a maximum delay for mail delivery between any of the cousin pairs.
+ When Bill receives a batch of mail from the mail carrier, he performs a demultiplexing operation by observing to whom the letters are addressed and then hand delivering the mail to his brothers and sisters.
+ When Bill receives a batch of mail from the mail carrier, he performs a demultiplexing operation by observing to whom the letters are addressed and then hand delivering the mail to his brothers and sisters.
+ When Bill receives a batch of mail from the mail carrier, he performs a demultiplexing operation by observing to whom the letters are addressed and then hand delivering the mail to his brothers and sisters.
+ Ann performs a multiplexing operation when she collects letters from her brothers and sisters and gives the collected mail to the mail person.
+ Ann performs a multiplexing operation when she collects letters from her brothers and sisters and gives the collected mail to the mail person.
+ As we expect, e-mail, remote terminal access, the Web, and file transfer run over TCP—all these applications need the reliable data transfer service of TCP.
+3  •  CONNECTIONLESS TRANSPORT: UDP  Application  Application-Layer Protocol  Underlying Transport Protocol  Electronic mail  SMTP  TCP  Remote terminal access  Telnet  TCP  Web  HTTP  TCP  File transfer  FTP  TCP  Remote file server  NFS  Typically UDP  Streaming multimedia  typically proprietary  UDP or TCP  Internet telephony  typically proprietary  UDP or TCP  Network management  SNMP  Typically UDP  Name translation  DNS  Typically UDP  Figure 3.
+7  •  TCP CONGESTION CONTROL  PRINCIPLES IN PRACTICE TCP SPLIT T ING: OPT IMIZ ING T HE PER F O R M A NC E O F C L O UD S ER VI C ES For cloud services such as search, e-mail, and social networks, it is desirable to provide a high-level of responsiveness, ideally giving users the illusion that the services are running within their own end systems (including their smartphones).
+ Suppose this planet has a mail service that delivers letters from source house to destination house.
+ The mail service requires that (1) the letter be in an envelope, and that (2) the address of the destination house (and nothing more) be clearly written on the envelope.
+ In your protocol, does the mail service ever have to open the envelope and examine the letter in order to provide its service? R3.
+, as indicated by the source or destination TCP/UDP port number) receive priority over user traffic; additionally, real-time voice-over-IP packets might receive priority over non-real traffic such as SMTP or IMAP e-mail packets.
+ On the other hand, the more traditional applications, such as file transfer and e-mail, might not be treated as flows.
+ The 8-bit traffic class field, like the TOS field in IPv4, can be used to give priority to certain datagrams within a flow, or it can be used to give priority to datagrams from certain applications (for example, voice-over-IP) over datagrams from other applications (for example, SMTP e-mail).
+ Suppose you have just created a small company that has a number of servers, including a public Web server that describes your company’s products and services, a mail server from which your employees obtain their e-mail messages, and a DNS server.
+ Suppose you have just created a small company that has a number of servers, including a public Web server that describes your company’s products and services, a mail server from which your employees obtain their e-mail messages, and a DNS server.
+ Moreover, you would like your employees to be able to send and receive e-mail to potential customers throughout the world.
+ Once you have your physical connectivity and your IP address range, you will assign one of the IP addresses (in your address range) to your Web server, one to your mail server, one to your DNS server, one to your gateway router, and other IP addresses to other servers and networking devices in your company’s network.
+5  •  THE SDN CONTROL PLANE  other publicly available servers in your company, including your mail server.
+ Eventually, all Internet routers will know about your prefix (or about some aggregate that includes your prefix) and thus be able to appropriately forward datagrams destined to your Web and mail servers.
+, search, e-mail, social networking, and e-commerce).
+, Web pages and videos), store e-mails and documents, and collectively perform massively distributed computations (e.
+30 ♦ A data center network with a hierarchical topology  Load Balancing A cloud data center, such as a Google or Microsoft data center, provides many applications concurrently, such as search, e-mail, and video applications.
+30 and suppose that the data center needs to support e-mail and video distribution among other applications.
+ Suppose four racks of servers are reserved for e-mail and four racks are reserved for video.
+ For the e-mail application, suppose that for 99.
+ For what fraction of time does the e-mail application need to use a fourth rack? How about for the video application? b.
+ Assuming e-mail usage and video usage are independent, for what fraction of time do (equivalently, what is the probability that) both applications need their fourth rack? c.
+ But, of course, when we’re on the go, we’d also like to read e-mail, access the Web, get location-dependent services (e.
+, send/read e-mail, browse the Web, Telnet to a remote host) from home, the particular IP address used by the laptop is not that important.
+ Later communication from the friend may be either indirect (for example, with mail being sent first to the parents’ home and then forwarded to the mobile adult) or direct (for example, with the friend using the address obtained from the parents to send mail directly to her mobile friend).
+ Later communication from the friend may be either indirect (for example, with mail being sent first to the parents’ home and then forwarded to the mobile adult) or direct (for example, with the friend using the address obtained from the parents to send mail directly to her mobile friend).
+ He is always the first person I e-mail for advice on matters large and small.
+” This being a networking text, we should remark that Alice and Bob could be two routers that want to exchange routing tables securely, a client and server that want to establish a secure transport connection, or two e-mail applications that want to exchange secure e-mail—all case studies that we will consider later in this chapter.
+” This being a networking text, we should remark that Alice and Bob could be two routers that want to exchange routing tables securely, a client and server that want to establish a secure transport connection, or two e-mail applications that want to exchange secure e-mail—all case studies that we will consider later in this chapter.
+ We’ll examine how to secure e-mail, how to secure a TCP connection, how to provide blanket security at the network layer, and how to secure a wireless LAN.
+ When a user wants to access an inbox, how does the mail server verify that the user is the person he or she claims to be? We study end-point authentication in Section 8.
+ Having established that there are indeed real threats loose in the Internet, what are the Internet equivalents of Alice and Bob, our friends who need to communicate securely? Certainly, Bob and Alice might be human users at two end systems, for example, a real Alice and a real Bob who really do want to exchange secure e-mail.
+ In this section, we focus on block ciphers, which are used in many secure Internet protocols, including PGP (for secure e-mail), SSL (for securing TCP connections), and IPsec (for securing the network-layer transport).
+4 that PGP—a popular secure e-mail system—uses digital signatures for message integrity.
+ To verify the signature, Alice obtains Bob’s public key (perhaps from a public key server or from the e-mail message) and checks the digital signature.
+ [RFC 1422] describes CA-based key management for use with secure Internet e-mail.
+4 End-Point Authentication End-point authentication is the process of one entity proving its identity to another entity over a computer network, for example, a user proving its identity to an e-mail server.
+ A concrete example is a user authenticating him or herself to an e-mail server.
+ Typically, an authentication protocol would run before the two communicating parties run some other protocol (for example, a reliable data transfer protocol, a routing information exchange protocol, or an e-mail protocol).
+ Gmail, Facebook, telnet, FTP, and many other services use password authentication.
+ Our approach is to use a specific application, e-mail, as a case study for application-layer security.
+ A classic example is Pretty Good Privacy (PGP), which provides secure e-mail (discussed later in this section).
+3 to create a secure e-mail system.
+ When designing a secure e-mail system, let us keep in mind the racy example introduced in Section 8.
+ Imagine that Alice wants to send an e-mail message to Bob, and Trudy wants to intrude.
+ Before plowing ahead and designing a secure e-mail system for Alice and Bob, we should consider which security features would be most desirable for them.
+1, neither Alice nor Bob wants Trudy to read Alice’s e-mail message.
+ The second feature that Alice and Bob would most likely want to see in the secure e-mail system is sender authentication.
+ Finally, the e-mail system should provide receiver authentication; that is, Alice wants to make sure that she is indeed sending the letter to Bob and not to someone else (for example, Trudy) who is impersonating Bob.
+, in a public key server or on his personal Web page), Alice encrypts her message with Bob’s public key, and she sends the encrypted message to Bob’s e-mail address.
+)  –  m  KS  –  KB+ (KS )  Alice sends e-mail message m  +  KB (KS )  KB (.
+)  Bob receives e-mail message m  Figure 8.
+19 ♦ Alice used a symmetric session key, KS , to send a secret e-mail to Bob e-mail address.
+19 ♦ Alice used a symmetric session key, KS , to send a secret e-mail to Bob e-mail address.
+ Having designed a secure e-mail system that provides confidentiality, let’s now design another system that provides both sender authentication and message integrity.
+ Specifically, Alice (1) applies a hash function, H (for example, MD5), to her message, m, to obtain a message digest, (2) signs the result of the hash function with her private key, K A- , to create a digital signature, (3) concatenates the original (unencrypted) message with the signature to create a package, and (4) sends the package to Bob’s e-mail address.
+ Now let’s consider designing an e-mail system that provides confidentiality, sender authentication, and message integrity.
+)  –  Internet  m  m Alice sends e-mail message m  SECURING E-MAIL  Compare  H(.
+)  Bob receives e-mail message m  Figure 8.
+ The secure e-mail design outlined in Figure 8.
+21 probably provides satisfactory security for most e-mail users for most occasions.
+2 PGP Written by Phil Zimmermann in 1991, Pretty Good Privacy (PGP) is a nice example of an e-mail encryption scheme [PGPI 2016].
+ Of course, the plaintext message is not included within the secret e-mail message.
+6 Securing TCP Connections: SSL In the previous section, we saw how cryptographic techniques can provide confidentiality, data integrity, and end-point authentication to a specific application, namely, e-mail.
+ SSL is supported by all popular Web browsers and Web servers, and it is used by Gmail and essentially all Internet commerce sites (including Amazon, eBay, and TaoBao).
+ Bob enters this information, clicks on Submit, and expects to receive (via ordinary postal mail) the purchased perfumes; he also expects to receive  659  660  CHAPTER 8  •  SECURITY IN COMPUTER NETWORKS  a charge for his order in his next payment card statement.
+ If such a network-layer service were in place, all data sent from one entity to the other— including e-mail, Web pages, TCP handshake messages, and management messages (such as ICMP and SNMP)—would be hidden from any third party that might be sniffing the network.
+35 ♦ Providing anonymity and privacy with a proxy Internal networks often have multiple application gateways, for example, gateways for Telnet, HTTP, FTP, and e-mail.
+ In fact, an organization’s mail server (see Section 2.
+ The alert could be sent to the network administrator in an e-mail message, could be sent to the network management system, or could simply be logged for future inspection.
+ What is the de facto e-mail encryption scheme? What does it use for authentication and message integrity? R20.
+ Suppose Alice wants to send an e-mail to Bob.
+ We’ll see that each of these classes of applications has its own unique service requirements that differ significantly from those of traditional elastic applications such as e-mail, Web browsing, and remote login.
+ These delay-sensitive but loss-tolerant characteristics are clearly different from those of elastic data applications such as Web browsing, e-mail, social networks, and remote login.
+ However, we expect many—if not most—SIP addresses to resemble e-mail addresses.
+ When Alice’s SIP device sends an INVITE message, the message would include this e-mail-like address; the SIP infrastructure would then route the message to the IP device that Bob is currently using (as we’ll discuss below).
+ An interesting feature of SIP addresses is that they can be included in Web pages, just as people’s e-mail addresses are included in Web pages with the mailto URL.
+ An interesting feature of SIP addresses is that they can be included in Web pages, just as people’s e-mail addresses are included in Web pages with the mailto URL.
+) Similar to an e-mail message, the SIP message includes a From header line and a To header line.
+ The message includes a Call-ID, which uniquely identifies the call (similar to the message-ID in e-mail).
+ So now let us suppose that Alice knows only Bob’s e-mail address,  9.
+ Alternatively, the reply might include the IP address of Bob’s voicemail box, or it might include a URL of a Web page (that says “Bob is sleeping.
+ For example, an ISP might well want to provide a higher class of service to delay-sensitive Voice-over-IP or teleconferencing traffic (and charge more for this service!) than to elastic traffic such as e-mail or HTTP.
+ We have approximated such services with HTTP kludges and e-mail, but this was never very satisfactory.
+ See additive-increase, multiplicative-decrease Akamai, 178, 183 aliasing host, 156, 164 mail server, 156 ALOHANet, 88, 90, 488 ALOHA protocols, 483, 506 backoff in, 544 pure, 486 slotted, 484–486, 544 alternating-bit protocol, 245, 246 Alto computers, 506 Amazon, 92, 528, 703 cloud services, 182 Netflix and, 182–184 video streaming, 175, 707 anchor foreign agent, 597 anchor MSC, 607 Andreessen, Marc, 91, 212–213 Andreessen Horowitz, 212 Android devices, 46 anomaly-based systems, 689 anonymity, 686  INDEX  anycast address, 377 AONs.
+11 EIGRP protocol, 420 elastic applications, 120 e-mail, 144–154 access protocols, 150–154 IMAP, 151, 153–154 message formats, 149–150 securing, 654–659 servers, 144–145, 156 SMTP, 78, 125, 146–151 web-based, 154 encapsulation, 81–83 in indirect routing, 594  INDEX  Encapsulation Security Payload (ESP), 668, 670–671 encrypted, 622 encryption attack types against, 627 passwords, 651–652 polyalphabetic, 627–628 public key, 625, 632–638, 658, 664 security associations and, 669 standards for, 630 symmetric key, 626–632 encryption algorithm, 625 end-end principle, 233 end-point authentication, 86–87, 623 end systems, 30, 32, 37, 39 delay in, 71 end-to-end congestion control, 296 end-to-end connection, 55 end-to-end delay, 69–71, 717, 718 enhanced packet core (EPC), 586 eNodeB, 586 enter deep, 178, 179 entity body, 134 EPC.
+ See Gateway Mobile services Switching Center Go-Back-N (GBN) protocol, 249–254 events, 252 TCP as, 280 Google, 39, 92, 313 CDNs, 184 data centers, 179 network infrastructure, 179 private network, 62, 93, 403 SDN use by, 403, 441, 444 web-based e-mail, 154 Google Application Engine, 93 Google Chrome browser, 186 QUIC protocol, 230, 231, 313 Google Chromium, 313 Google Talk, 703, 708, 727 GPRS.
+ See head-of-the-line blocking home agent, 590 discovery, 598, 599–600 indirect routing and, 593–594 registration with, 600–601, 602 home location register (HLR), 603 call routing and, 604–605 home MSC, 603 home network, 590, 603 home public land mobile network (home PMLN), 603 Home Subscriber Service (HSS), 587 hop limit, 379 host addresses, obtaining with DHCP, 370–373 host aliasing, 156, 164 hostname, 154–155 alias, 156, 164 in DNS queries, 160–161 in DNS resource records, 163–165 DNS services and, 155–156 hosts, 30, 37, 39 data center, 523 wireless, 548 Hotmail, 154 hot potato routing, 428–429 HSPA (High Speed Packet Access), 585 HSS.
+ See medium access control protocol mailbox, 144 mail servers, 144–145 aliasing, 156 malware, 83–84 self-replicating, 84 managed device, 450 managed objects, 450 Management Information Base (MIB), 450, 452 managing server, 450 MANETs.
+ See medium access control protocol mailbox, 144 mail servers, 144–145 aliasing, 156 malware, 83–84 self-replicating, 84 managed device, 450 managed objects, 450 Management Information Base (MIB), 450, 452 managing server, 450 MANETs.
+11, 565–570 Ethernet, 507 medium access protocol, 467 memory access times, 346 bandwidth of, 347 switching via, 347–348 mesh networks, wireless, 552 message authentication code (MAC), 641–642 digital signatures and, 644–645 IPsec datagrams, 670 in SSL, 662–663 message integrity, 622–623, 638, 655, 656 message queue, 145 messages, 51, 78, 116 application-layer, 82 ARP, 499–501, 531 complexity in LS algorithms, 418–419 DHCP, 371–372, 529–530 DNS, 164–166, 531–532 e-mail formats, 149–150 HELLO, 422 HTTP format, 131–136 ICMP ping, 167 intruder actions on, 624 OpenFlow, 443 port-status, 443 SIP, 734 source quench, 447–448 Metcalfe, Bob, 488, 503, 506 metering function, 750 MIB.
+ See software-defined networking SDN controller, 438–440, 465 secure communication, 622 secure e-mail, 655–658 Secure Hash Algorithm (SHA-1), 641, 642 Secure Sockets Layer (SSL), 122, 212, 544, 659–665, 686 connection closure, 665 data transfer, 662–663 handshake, 661, 664–665 key derivation, 662 security, 701–702 datagram inspection, 376 DNS vulnerabilities, 167 e-mail, 654–659 firewalls, 376, 382, 623, 679–687 IDSs, 376, 623, 687–690 network layer, 340, 665–673 operational, 412, 623, 679–690 OSPF and, 422 switch poisoning, 513 SYN flood attacks, 288 transport protocol, 120–121 wireless LANs, 674–678 security association (SA), 668–669, 673 Security Association Database (SAD), 669 Security Parameter Index (SPI), 669 Security Policy Database (SPD), 672 segment replay attack, 664  segments, 79, 216, 219 acknowledged, 299 lost, 299 maximum size, 263, 264, 307 TCP, 263 TCP structure, 264–269 TCP SYN, 532, 681 transport-layer, 82 UDP, 529 UDP structure, 232 selective acknowledgment, 280 selective repeat (SR), 249, 254–260 events and actions, 256 operation of, 257 TCP as, 280 window size, 258, 259 self-clocking, 298 self-learning, 511–512, 530 self-replicating malware, 84 self-scalability, 115 self-synchronization, 411 send buffer, 263 sender authentication, 655, 656 senders in CRC operation, 477–478 in parity bit operation, 474 sending rate, 292 sequence number, 240 in 802.
+ See software-defined networking SDN controller, 438–440, 465 secure communication, 622 secure e-mail, 655–658 Secure Hash Algorithm (SHA-1), 641, 642 Secure Sockets Layer (SSL), 122, 212, 544, 659–665, 686 connection closure, 665 data transfer, 662–663 handshake, 661, 664–665 key derivation, 662 security, 701–702 datagram inspection, 376 DNS vulnerabilities, 167 e-mail, 654–659 firewalls, 376, 382, 623, 679–687 IDSs, 376, 623, 687–690 network layer, 340, 665–673 operational, 412, 623, 679–690 OSPF and, 422 switch poisoning, 513 SYN flood attacks, 288 transport protocol, 120–121 wireless LANs, 674–678 security association (SA), 668–669, 673 Security Association Database (SAD), 669 Security Parameter Index (SPI), 669 Security Policy Database (SPD), 672 segment replay attack, 664  segments, 79, 216, 219 acknowledged, 299 lost, 299 maximum size, 263, 264, 307 TCP, 263 TCP structure, 264–269 TCP SYN, 532, 681 transport-layer, 82 UDP, 529 UDP structure, 232 selective acknowledgment, 280 selective repeat (SR), 249, 254–260 events and actions, 256 operation of, 257 TCP as, 280 window size, 258, 259 self-clocking, 298 self-learning, 511–512, 530 self-replicating malware, 84 self-scalability, 115 self-synchronization, 411 send buffer, 263 sender authentication, 655, 656 senders in CRC operation, 477–478 in parity bit operation, 474 sending rate, 292 sequence number, 240 in 802.
+11 frames, 573 in GBN protocol, 249–250 jitter control with, 719 in pipelined protocols, 249 retransmission handling with, 240–241 RTP, 730 in SR protocol, 255, 258 in SSL MAC calculation, 663 TCP, 265–267 for TCP segment, 266 Telnet and, 267–269 sequence number field, 264  843  844  INDEX  servers, 39, 114, 116 authoritative DNS, 160, 532 DNS, 155, 159–162, 160, 167 DNS root, 159, 162 enter-deep, 179 local DNS, 160 mail, 144–145, 156 managing, 450 network control, 441 processes, 116–117, 261 proxy, 686, 735, 138 TCP socket programming, 196–198 UDP socket programming, 191–192 user interaction with via cookies, 136–138 web, 91, 127, 227–228 Service Abstraction Layer (SAL), 444–445 service differentiation, 737, 747–751 Service Level Agreements (SLAs), 450 service model, 77 IP, 220 network, 339–340 reliable data transfer, 234, 235 services DNS, 155–157 flow-control, 280 full-duplex, 261 layering, 77 link layer, 470–471 network layer, 339–340 TCP, 220 transport layer, 118–123 UDP, 123 unreliable, 220 Service Set Identifier (SSID), 562 in beacon frames, 563 Serving Gateway (S-GW), 586  Serving GPRS Support Nodes (SGSNs), 584 Session Initiation Protocol (SIP), 731–736, 765 addresses, 733–734 call to known IP address, 732–733 messages, 734 name translation and user location, 734–736 session keys, 637, 655 SGSNs.
+ See Short Inter-frame Spacing signal strength, 553 fading, 556 signal-to-noise ratio (SNR), 554–556 rate adaptation and, 575 signature-based systems, 689, 690 silent periods, 57 simple authentication, 422 Simple Mail Transfer Protocol (SMTP), 78, 125, 144, 146–148 HTTP comparison with, 149 mail access protocols and, 150–151 Simple Network Management Protocol (SNMP), 445, 452–454 single-hop, infrastructure-based wireless networks, 552 single-hop, infrastructure-less wireless networks, 552 SIP.
+ See synchronization source identifier ssthresh, 301–304 Stanford Research Institute (SRI), 88, 107 StarBand, 44 stateful filters, 680, 682–684 stateless protocols, 128 state-management layer, SDN, 438 static routing algorithms, 407 status line, 134 stop-and-wait protocols, 239, 247, 248 store-and-forward transmission, 51–52 stream ciphers, 628, 675 Stream Control Transmission Protocol (SCTP), 313 streaming adaptive HTTP, 709 CDNs and, 180–181 DASH, 176–177, 183, 716 HTTP, 176–177, 709, 713–716 live, 709 live video, 709 Netflix platform, 182–184 P2P, 185 P2P live, 175 P2P video, 709 processing for, 182 RTSP, 711 stored audio and video, 707–708 TCP buffers in, 713–714 UDP, 709, 711 video, 175–176, 180–184 streetlamp wireless hotspots, 551 Structure of Management Information (SMI), 450 subnet mask, 364 subnets, 363–367 datagram transmission to, 501–502 mobility on, 574–575  obtaining blocks of IP addresses, 369 in OSPF, 420 SOHO, 373 successful slot, 485 super peers, 726 SWAN, 403 switch, 503 switched networks, topology of, 514 switches crossbar, 347–349 forwarding and filtering by, 509–510 layer 4, 343 layer 5, 343 link-layer, 32, 51, 341, 346, 509–515 non-blocking, 348 plug-and-play, 512 properties of, 512 routers versus, 513–515 self-learning, 511–512 top of rack, 523 VLANs and, 516 switch filtering, 509–510 switch forwarding, 509–510 switching, 340 in destination-based forwarding, 346 techniques for, 347–349 switching fabric, 342 bus, 348 crossbar, 347–349 interconnection network, 348–349 memory, 347–348 queuing and speed of, 349–350 switch poisoning, 513 switch table, 509 poisoning, 513 symmetric key cryptography, 626–632 block ciphers, 628–630  INDEX  cipher-block chaining, 630–632 nonce use with, 653 in PGP, 658 polyalphabetic encryption, 627–628 secure e-mail using, 655 in SSL handshake, 664 SYNACK segment, 283, 287 SYN bit, 265 synchronization source identifier (SSRC), 730 SYN cookies, 288 SYN flood attack, 288  T Tag Protocol Identifier (TPID), 517 taking-turns protocols, 481, 492–493, 565 TCAMs.
+ See virtual private networks vulnerability attacks, 84  W web-based e-mail, 154 Web browsers, 91–92, 116–117, 127 conditional GET and, 143–144 cookies, 136–138 email access via, 154 GET requests, 132 header lines from, 135–136 parallel connections, 129–130, 310 SSL support, 659 web caches and, 138–141 Web caching, 138–144 web of trust, 659 Web page, 126 web page requests, 528–533 Web servers, 91, 127 TCP and, 227–228 Wechat, 703, 727 weighted fair queuing (WFQ), 356–357, 744–747 welcoming socket, 225 well-known application protocols, 223  well-known port numbers, 222 WEP.
+ See virtual private networks vulnerability attacks, 84  W web-based e-mail, 154 Web browsers, 91–92, 116–117, 127 conditional GET and, 143–144 cookies, 136–138 email access via, 154 GET requests, 132 header lines from, 135–136 parallel connections, 129–130, 310 SSL support, 659 web caches and, 138–141 Web caching, 138–144 web of trust, 659 Web page, 126 web page requests, 528–533 Web servers, 91, 127 TCP and, 227–228 Wechat, 703, 727 weighted fair queuing (WFQ), 356–357, 744–747 welcoming socket, 225 well-known application protocols, 223  well-known port numbers, 222 WEP.
+509, 648 Xerox Palo Alto Research Center (Xerox PARC), 506 XTP, 476  Y Yahoo, 92 web-based e-mail, 154 Youku, 175, 703 YouTube, 175, 707 CDNs, 184 data centers, 179  Z zeroconf, 370 Zigbee, 578–579 Zimmerman, Phil, 658  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  This page intentionally left blank  GLOBAL EDITION  For these Global Editions, the editorial team at Pearson has collaborated with educators across the world to address a wide range of subjects and requirements, equipping students with the best possible learning tools.
+

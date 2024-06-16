@@ -1,0 +1,256 @@
+  A variable is a name in source code that is associated with an area in memory that you can use to store data, which is then called upon throughout the code.
+ “Hello World” is a string  As well as these main data types, there are sequence types (technically, a string is a sequence type but is so commonly used we’ve classed it as a main data type): List  Contains a collection of data in a specific order  Tuple  Contains a collection immutable data in a specific order  A tuple would be used for something like a co-ordinate, containing an x and y value stored as a single variable, whereas a list is typically used to store larger collections.
+ Let’s work on a program we can use to demonstrate how to use variables and different data types.
+ We’re going to call ours variables.
+  “A variable is a name in source code that is associated with an area in memory that you can use to store data” Interpreted vs compiled languages An interpreted language such as Python is one where the source code is converted to machine code and then executed each time the program runs.
+  Get started with Python #!/usr/bin/env python2  The following line creates an integer variable called hello_int with the # value of 21.
+ Notice how it doesn’t need to go in quotation marks  # We create a variable by writing the name of the variable we want followed # by an equals sign, which is followed by the value we want to store in the # variable.
+ Notice how it doesn’t need to go in quotation marks  # We create a variable by writing the name of the variable we want followed # by an equals sign, which is followed by the value we want to store in the # variable.
+ Notice how it doesn’t need to go in quotation marks  # We create a variable by writing the name of the variable we want followed # by an equals sign, which is followed by the value we want to store in the # variable.
+ For example, the following line creates a variable called # hello_str, containing the string Hello World.
+ This list will overwrite the irst list without any warning as we # are using the same variable name as the previous list.
+ We will talk about variable scope in some more detail later on.
+exit function target_int = raw_input(“How many integers? “) # By now, the variable target_int contains a string representation of # whatever the user typed.
+ The irst is with a for loop  print(“Using a for loop”) for value in ints: print(str(value))  The Python Book 13  Get started with Python TIP You can define defaults for variables if you want to be able to call the function without passing any variables through at all.
+ The irst is with a for loop  print(“Using a for loop”) for value in ints: print(str(value))  The Python Book 13  Get started with Python TIP You can define defaults for variables if you want to be able to call the function without passing any variables through at all.
+ You do this by putting an equals sign after the variable name.
+ total = len(ints) count = 0 while count < total: print(str(ints[count])) count += 1  Functions and variable scope Functions are used in programming to break processes down into smaller chunks.
+ Functions can have variables passed to them.
+ Variables in Python are always passed by value, which means that a copy of the variable is passed to the function that is only valid in the scope of the function.
+ Any changes made to the original variable inside the function will be discarded.
+ Any variables that can be passed through are put in brackets following the function’s name.
+ Multiple variables are separated by commas.
+ The names given to the variables in these brackets are the ones  that they will have in the scope of the function, regardless of what the variable that’s passed to the function is called.
+ The names given to the variables in these brackets are the ones  that they will have in the scope of the function, regardless of what the variable that’s passed to the function is called.
+ The output from the program opposite is as follows:  “Functions are used in programming to break processes down in”  #!/usr/bin/env python2 # Below is a function called modify_string, which accepts a variable # that will be called original in the scope of the function.
+ return original  test_string = “This is a test string” modify_string(test_string) print(test_string) test_string = modify_string_return(test_string) print(test_string)  However, we can call the function like this  14 The Python Book  # The function’s return value is stored in the variable test string, # overwriting the original and therefore changing the value that is # printed.
+ It’s going to have a Boolean variable called cont, which will decide if a number will be assigned to a variable in an if statement.
+ It’s going to have a Boolean variable called cont, which will decide if a number will be assigned to a variable in an if statement.
+ However, the variable hasn’t been defined anywhere apart from in the scope of the if statement.
+ We’ll finish off by trying to print the variable.
+py”, line 8, in <module> print var NameError: name ‘var’ is not defined If cont is set to True, then the variable will be created and we can access it just fine.
+ The correct way is to initialise the variable outside of the scope of the if statement.
+ #!/usr/bin/env python2 cont = False var = 0 if cont: var = 1234 if var != 0: print(var) The variable var is defined in a wider scope than the if statement, and can still be accessed by the if statement.
+ Any changes made to var inside the if statement are changing the variable defined in the larger scope.
+ For example, you should always name your variables in the same manner.
+ One crucial thing is to use self-documenting identifiers for variables.
+ You shouldn’t have to guess  strictly less than  <=  less than or equal  >  strictly greater than  >=  greater than or equal  ==  equal  !=  not equal  what a variable does.
+ We will also be looking at some commands that are useful in learning about the current session within Python, like the current list of variables that have been defined and how memory is being used.
+ You can then start using this new environment by sourcing the script ‘ENV/bin/ activate’, which will change several environment variables, such as the PATH.
+ In a for loop, you iterate over some sequence of values, pulling them off the list one at a time and putting them in a temporary variable.
+  41 Internal variables  For people coming from other programming languages, there is a concept of having certain variables or methods be only available internally within an object.
+  41 Internal variables  For people coming from other programming languages, there is a concept of having certain variables or methods be only available internally within an object.
+ They are not hidden, however, and there is no explicit protection for these variables or methods.
+ This gets returned as a new list that you can save in a new variable name.
+  The Python Book 23  Python  Essentials  26 Code rock, paper, scissors Put basic coding into action  32 Program a hangman game Use Python to make the classic game  38 Play poker dice Test your luck and your coding  50 Bring graphics to games Add images to simple games  56 Build an app for Android Make your own app with Kivy  62 Making web apps Use Python to create online apps  44 Create a graphical interface 66 50 Python tips Add interface to your projects  56  24 The Python Book  Essential knowledge for Python users  “Get to grips with Python and start building on the basics with these expert guides”  44  50  The Python Book 25  Python essentials  Allow the Python script to run in a terminal, and outside the IDE Human input in the form of integers is used for comparing moves and, ultimately, playing the game Use deduction to determine one of three outcomes Loop the code over again and start from the beginning  Append to integer variables to keep track of scores and more  Code a game of rock, paper, scissors  Learn how to do some basic Python coding by following our breakdown of a simple rock, paper, scissors game  Resources Python 2: www.
+ The three variables we’re using and their relationship is defined.
+ We also provide a variable so we can keep score of the games  02  We begin the game code by defining the start of each round.
+ First, we’re putting in a delay to add some tension, appending a variable to some printed text, and then comparing what the player and computer did.
+  03  05  06  We’re setting each move to a specific number so that once a selection is made by the player during the game, it will be equated to that specific variable.
+ These names are only equated to these variables when they are needed – this way, the number assigned to each of them is maintained while it’s needed.
+  28 The Python Book  Similar to the way the text names of the variables are defined and used only when needed, the rules are done in such a way that when comparing the results, our variables are momentarily modified.
+  28 The Python Book  Similar to the way the text names of the variables are defined and used only when needed, the rules are done in such a way that when comparing the results, our variables are momentarily modified.
+  Very simply, this creates a variable that can be used throughout the code to keep track of scores.
+ Next, we are setting the player variable to be created from the player’s input with raw_input.
+  The code in action  The Python Book 29  Python essentials  11  The result function only takes the variables player and computer for this task, which is why we set that in result(player, computer).
+ Using the global function allows for the variable to be changed and used outside of the variable, especially after we’ve appended a number to one of their scores.
+ Using the global function allows for the variable to be changed and used outside of the variable, especially after we’ve appended a number to one of their scores.
+ If that’s the case, we print the message saying so, and add one to the player_score variable from before.
+  The code in action  The Python Book 31  Python essentials  This section imports the extra Python functions we’ll need for the code – they’re still parts of the standard Python libraries, just not part of the default environment  We’re again providing variables so we can keep score of the games played, and they’re updated each round  Our very basic graphics involve ASCII art of the game’s stages, printed out after every turn  Program a game of Hangman  #!/usr/bin/env python2  Code listing  from random import * player_score = 0 computer_score = 0 def hangedman(hangman): graphic = [ “”” +-------+ | | | | | ============== “””, “”” +-------+ | | | O | | | =============== “””, “””  “””, “”” +-------+ | | | O | -|| / \ | =============== “””] print graphic[hangman] return  Learn how to do some more Python coding by following our breakdown of a simple Hangman game  Resources Python 2: www.
+ We’re playing around with a lot more variables this time.
+ It prints out the graphic and changes any variables that need to be updated, especially incorrect and correct guesses  After each round, the code checks if you’ve won or lost yet – the win condition being that you guessed the word, or losing if you’ve made six guesses  def start(): print “Let’s play a game of Linux Hangman.
+ “”” +-------+ | | | | | ============== “””, “”” +-------+ | | | O | | | =============== “””, “”” +-------+ | | | O | | | | =============== “””, “”” +-------+ | O | -| | | | =============== “””, “”” +-------+ | | | O | -|| | =============== “””, “”” +-------+ | | | O | -|| / | =============== “””, “”” +-------+ | | | O | -|| / \ | =============== “””]  34 The Python Book  01 #!/usr/bin/env python2  The rules Although we’ve moved some of the rules to the ‘game’ function this month, you can always put them back here and call upon them using the global variable, as we would do with the scores.
+  03  Very simply, this creates a variable that can be used throughout the code to keep track of scores.
+ Finally, we ascertain how long the string is of the word to guess, and then create the clue variable with a number of underscores of that length.
+  08  We start to set up the rules and the individual variables to keep track of during the game.
+ There can only be six incorrect guesses before the hanging man is fully drawn, or in our case displayed, so we set the tries variable to six.
+ Finally, we create empty variables for the number of guesses made, letters correct and letters incorrect, to make the code slightly easier.
+  10  We call upon the function we’re using to input a letter and give it the variable ‘letter’.
+ If it doesn’t find the letter, it returns a -1 value, which we use in the next if statement to see if the first_index variable is -1.
+ We use the range function to tell the code how many times we wish to iterate over the clue by using the word_length variable.
+ So, we hope luck is a lady for you and that the odds are ever in your favour – just keep those fingers crossed that you don’t roll a snake eyes (we are coding in Python, after all)!  The Start Here we’re doing some minor setups so we can get our code to run with some extra modules not included with the basics  #!/usr/bin/env python2  The Rules  nine = 1 ten = 2 jack = 3 queen = 4 king = 5 ace = 6  We’re setting names for each dice roll so they can be properly identified to the player – much more interesting than numbers  The Score Again we’ve got some basic variables set up so we can keep score of the games if we want to  Code listing  import random from itertools import groupby  names = { nine: “9”, ten: “10”, jack: “J”, queen: “Q”, king: “K”, ace: “A” } player_score = 0 computer_score = 0  The Script The game is handled here, passing the player onto the next function to actually play, and handling the end of the session as well  The Game  def start(): print “Let’s play a game of Linux Poker Dice.
+ See you next time!” def scores(): global player_score, computer_score print “HIGH SCORES” print “Player: “, player_score print “Computer: “, computer_score if __name__ == ‘__main__’: start()  The Python Book 39  Python essentials  RECYCLING  01  #!/usr/bin/env python2  02  import random from itertools import groupby  03  nine = 1 ten = 2 jack = 3 queen = 4 king = 5 ace = 6  There are a few variables that have duplicates throughout the code – while we’ve been careful to make sure they work where we want them to, it’s not the best code conduct.
+ The names of the variables don’t specifically matter – it’s just best to label them in a way you understand for bug fixing and others to read.
+ We’ve set a variable here to pass on to our throwing function, allowing us to reuse  10  Throw again  Before we can throw the dice for the second round, we need to know which dice the  Python essentials  07  def throws(): roll_number = 5 dice = roll(roll_number) dice.
+ We first of all make sure to set our variables – updating roll_number to pass onto the roll function with the re-roll number the user set, and creating the list that’s the exact length of the new set of rolls we wish to use thanks to range(rerolls).
+ By setting an iterations variable, we can have the while loop last the same number of times as we want rerolls by comparing it to the reroll variable itself.
+ By setting an iterations variable, we can have the while loop last the same number of times as we want rerolls by comparing it to the reroll variable itself.
+choice(numbers) return dice  New dice  We’re resetting and reusing the iterations variable to perform a similar while loop to update the rolls we’ve done to the original dice variable.
+choice(numbers) return dice  New dice  We’re resetting and reusing the iterations variable to perform a similar while loop to update the rolls we’ve done to the original dice variable.
+ The main part of this while loop is using the iterations-1 variable to find the number from dice_changes list, and using that to change that specific integer in the dice list with the number from the replacement list.
+  17  Number of rolls  We begin the whole thing by bringing over the roll_number variable into the function – this is because while in the original roll it will always be five, the second roll could between one and the full five dice.
+ We create a list with the number of entries we need for each roll, and again set an iterations variable for the upcoming while loop.
+choice function and keeping it in the range of the numbers variable, which is one to six for each side of the dice.
+ After this is done, we return the dice variable to the throw function that makes up the majority of the game.
+ The first part uses the groupby function we imported –  this is used in this case to count the numbers that make up the dice variable.
+ We use a new variable to do this that works with the GUI, otherwise it works roughly the same as before  def game(): player = player_choice.
+set(new_score)  The result function remains largely unchanged, only now it sends the outcome message to a variable we use for the interface, and generally uses the new GUI’s variables  New window We create the game window with a slightly different method due to already having a ‘mainloop’ root window.
+set(new_score)  The result function remains largely unchanged, only now it sends the outcome message to a variable we use for the interface, and generally uses the new GUI’s variables  New window We create the game window with a slightly different method due to already having a ‘mainloop’ root window.
+ We’re also giving it a name so you can identify it properly  New variables Our new variables are set up so they can interact with both the game code and the interface code properly.
+ We’re also giving it a name so you can identify it properly  New variables Our new variables are set up so they can interact with both the game code and the interface code properly.
+ This is then passed along to the variable and used by the game code  New move Here we allow for the computer’s move to be displayed under the ‘Computer’ label  New button Pressing the Play button we’ve put here runs the game script, prints out the scores and finally a message based on the outcome  New ending We’ve changed this so that the main script begins with gui now rather than the start function  Label(rps_frame, text=’Player’).
+grid(column=1, row = 1, sticky = W) Radiobutton(rps_frame, text =’Rock’, variable = player_choice, value = 1).
+grid(column=1, row=2, sticky=W) Radiobutton(rps_frame, text =’Paper’, variable = player_choice, value = 2).
+grid(column=1, row=3, sticky=W) Radiobutton(rps_frame, text =’Scissors’, variable = player_choice, value = 3).
+grid(column=3, row = 1, sticky = W) Label(rps_frame, textvariable = computer_choice).
+grid(column = 1, row = 5, sticky = W) Label(rps_frame, textvariable = player_score).
+grid(column = 3, row = 5, sticky = W) Label(rps_frame, textvariable = computer_score).
+grid(column = 3, row = 6, sticky = W) Label(rps_frame, textvariable = result_set).
+  05  Main frame  The first line has us set the variable mainframe as a Frame in the interface.
+  06  Introductions  07  Rock, Paper, Scissors  We create the intro variable as a label that lives in the main frame.
+ All our variables are kept in here so that they still work properly.
+  12  Game variables  The variables are staying the same so that we can do the same comparisons we made in the original code.
+  12  Game variables  The variables are staying the same so that we can do the same comparisons we made in the original code.
+ First of all, the player variable is retried using get() on the special variable we’ve created to contain the player choice.
+ First of all, the player variable is retried using get() on the special variable we’ve created to contain the player choice.
+ We do a similar thing for the computer, using ‘set’ to change the variable in our interfacefriendly computer_choice value.
+ We still use the name variable to set the text that goes into computer_choice.
+ This then passes the player and computer variables along in the same way we did before.
+set(1) player_score = IntVar() computer_score = IntVar()  15  Result function  The result function still takes the same two variables as before, which we set in the game function.
+ While technically we can use the variables set up for the interface, these are not pure integers and can cause an error if not handled correctly.
+ With that in mind, we’ve created an empty new_score variable that we can use to effectively clean the interface value before adding it back into it.
+ We first do the easy check – whether or not the numeric value for the player and computer variable is the same.
+ What changes this time is that, instead of printing the text, we send the “Tie game” message to our result variable using the set function from Tkinter.
+ Finally, we set the new_score variable to be the current player score, using the get function to obtain it, plus one to the score, and then use set again to put it back into the player_score variable.
+ Finally, we set the new_score variable to be the current player score, using the get function to obtain it, plus one to the score, and then use set again to put it back into the player_score variable.
+ We can’t use += with the player_score variable, as it is not a standard variable.
+ We can’t use += with the player_score variable, as it is not a standard variable.
+ Like the new version of the win code, it then uses set to change the message that will be displayed to the player, and calls upon and changes the computer score by putting it through the new_score variable.
+  20  Interface variables  21  Game frame  Here is the reason we had to call and change the variables in a different manner.
+  20  Interface variables  21  Game frame  Here is the reason we had to call and change the variables in a different manner.
+ For Tkinter, we need to let the interface know whether or not a variable is an integer or a text value.
+ We’ve also set the player_choice variable to be one, which we have already set as the choice for rock.
+ The row and column variables allow for rows and columns to be included in the structure of  Python essentials  21  rps_frame = Frame(rps_window, padding = ‘3 3 12 12’, width = 300) rps_frame.
+grid(column=1, row = 1, sticky = W) Radiobutton(rps_frame, text =’Rock’, variable = player_choice, value = 1).
+grid(column=1, row=2, sticky=W) Radiobutton(rps_frame, text =’Paper’, variable = player_choice, value = 2).
+grid(column=1, row=3, sticky=W) Radiobutton(rps_frame, text =’Scissors’, variable = player_choice, value = 3).
+grid(column=3, row = 1, sticky = W) Label(rps_frame, textvariable = computer_choice).
+grid(column = 1, row = 5, sticky = W) Label(rps_frame, textvariable = player_score).
+grid(column = 3, row = 5, sticky = W) Label(rps_frame, textvariable = computer_score).
+grid(column = 3, row = 6, sticky = W) Label(rps_frame, textvariable = result_set).
+ We do this by adding the textvariable option to Label, and using the computer_choice variable we updated earlier in the game function.
+ We do this by adding the textvariable option to Label, and using the computer_choice variable we updated earlier in the game function.
+ We give each choice a name, then assign it to the player_choice variable.
+ Below that, we use the textvariable option again to get the numerical score we assigned to the separate score variable.
+ Below that, we use the textvariable option again to get the numerical score we assigned to the separate score variable.
+ Tkinter allows for text entry, and we rely a lot less on  1 Imported  Hangman Code Listing  Here we’re doing the same minor setup, including getting the Tkinter module that helps us create a simple graphical interface  from Tkinter import * 01 from ttk import * from random import * word = 0 02 word_length = 0 clue = 0  2 Words  03 def gui():  We’re keeping global word, word_length, clue our variables that dictionary = [“gnu”,”kernel”,”linux”,”magei determine the word to a”,”penguin”,”ubuntu”] guess here so it can word = choice(dictionary) 04 be easily accessed word_length = len(word) anywhere in the code clue = word_length * [“_”]  tries = 6  3 Function Like last time, we’re putting the majority of our original code into a new function, gui  4 Analysis We select the word 05 and analyse it before continuing on with the rest of the code  5 Graphics The hangedman function is largely unchanged, albeit with new code to display our ASCII graphics on the interface  6 Guesses We check the number of mistakes made, and call the guess_letter function to check the letter entered  50 The Python Book  ‘while’ loops to play the game in its entirety.
+ Both this and the above function pass the necessary details back up the chain to then be added into the new graphical elements of the new interface  04  6 No dice If no dice have been selected to re-roll, the hand output is changed to show a final message  7 Re-roll This part is almost the same as before – a new set of dice are rolled and then inserted into the list of dice like before, then re-sorted to make the hand analysis easier  8 More functions The new gui function is the main change to the Poker Dice code, and as before includes the Tkinter elements and other parts of the original code  9 Game start A simple function that we can use to activate the re-rolls of the dice  05  10 New hand The new dice are named, analysed, and everything is then set for the gui to display the final outcome  11 Reset Like with the hangman code, we have a function to reset all the variables, allowing you to start the game again  06  global dice dice1_check = dice1.
+ Python 2 does not allow you to call upon global variables when you’re in a nested function, whereas in Python 3 this could have gone into the gui function.
+  02  Global variables  We have kept these three variables outside of the gui function so they can be  03  Graphical function  04  Random word  05  The hanged man  06  Games begin  07  Check the letter  08  Update interface  09  Update scores  We’re putting all the working code into the gui function so it can be activated from the main interface.
+  02  Global variables  We have kept these three variables outside of the gui function so they can be  03  Graphical function  04  Random word  05  The hanged man  06  Games begin  07  Check the letter  08  Update interface  09  Update scores  We’re putting all the working code into the gui function so it can be activated from the main interface.
+  We bring in the three variables with global so we can modify them throughout the code, and then set the word.
+ When the function is called and the graphic selected, it’s placed in the variable we’ve set up in the interface code that we’re using to display the result.
+ To that end, we start by obtaining the incorrect guesses so far from the variable we’ve set up so the interface can access it if we want it to.
+ The if statement then adds one to the incorrect guess variable, or updates the clue variable to add the letter in the right spot.
+ The if statement then adds one to the incorrect guess variable, or updates the clue variable to add the letter in the right spot.
+  These three lines set the graphic for this round, join the current clue together as a string, and then set it on the variable for the interface to read.
+rowconfigure(0,weight=1)  14  Label(hm_frame, textvariable = hm_graphic).
+grid(column=2, row = 2) Label(hm_frame, textvariable = word_output).
+grid(column=2, row = 4) hm_entry = Entry(hm_frame, exportselection = 0, textvariable = letter_guess).
+grid(column = 1, row = 7, sticky = W) Label(hm_frame, textvariable = player_score).
+grid(column = 3, row = 7, sticky = W) Label(hm_frame, textvariable = computer_score).
+grid(column = 3, row = 8, sticky = W) Label(hm_frame, textvariable = result_set).
+grid(column = 2, row = 10) if __name__ == ‘__main__’: gui()  10  Sanitise input  The guess_letter function purely gets the letter from the player input variable, strips it of any formatting, makes it lower case, and then returns it back to the game function.
+  12  Interface variables  Tkinter only works with specific variables – we’ve created all the ones we need or can use here.
+  12  Interface variables  Tkinter only works with specific variables – we’ve created all the ones we need or can use here.
+  14  Clue to Hangman  These labels are fairly straightforward – we’re either giving them fixed text, or telling them to use a specific textvariable so they can be updated as we play the game.
+ The exportselection option makes it so selecting the letter won’t immediately copy it to the clipboard, and the textvariable selection is where the code stores the letter added.
+ Experiment with what you want to do!  19  The roll function has been removed from the gui function so as not to create any code errors with some of its variables.
+choice(numbers) return dice  Outside dice  For Poker Dice, there’s only one variable to show at any one time, the dice.
+grid(column=3, row = 1) Label(pd_frame, textvariable = dice_output).
+grid(column=3, row = 2) Label(pd_frame, textvariable = hand_output).
+grid(column=3, row = 4) reroll1 = Checkbutton(pd_frame, text = “1”, variable = dice1, onvalue = 1, offvalue = 0).
+grid(column=1, row = 5) reroll2 = Checkbutton(pd_frame, text = “2”, variable = dice2, onvalue = 2, offvalue = 0).
+grid(column=2, row = 5) reroll3 = Checkbutton(pd_frame, text = “3”, variable = dice3, onvalue = 3, offvalue = 0).
+grid(column=3, row = 5) reroll4 = Checkbutton(pd_frame, text = “4”, variable = dice4, onvalue = 4, offvalue = 0).
+grid(column=4, row = 5) reroll5 = Checkbutton(pd_frame, text = “5”, variable = dice5, onvalue = 5, offvalue = 0).
+grid(column = 3, row = 7)  The check buttons are new  25  Dice to re-roll  26  Early finish  27  New dice  28  Game over  29  Graphical variables  30  Check buttons  If a checkbox isn’t selected, we have it set to give a zero value.
+ Then the dice are re-sorted, analysed, joined as a string and then set into the interface’s variable.
+  As we’re rolling the dice as soon as we launch the game, but the interface code doesn’t start until the end, you can see that after creating the necessary variables, we also then set them.
+ Of note, the dice have to be made into a string separately with the for loop before adding to the variable.
+ The variable option sets whatever the outcome is to the specific Tkinter variable.
+ The variable option sets whatever the outcome is to the specific Tkinter variable.
+css” type=”text/css” media=”screen” /> </head> <body> <div id=”hd”> <h1>LUD Issue Tracker</span></h1> </div> <div id=”mn”> <ul> <li><a href=”{% url issue-list %}” class=”sel”>View Issues</a></li> <li><a href=”/admin/”>Admin Site</a></li> </ul> </div> <div id=”bd”> {% block content %} {% endblock %} </div> </body> </html> {{ variablename }} represents a Django variable.
+css” type=”text/css” media=”screen” /> </head> <body> <div id=”hd”> <h1>LUD Issue Tracker</span></h1> </div> <div id=”mn”> <ul> <li><a href=”{% url issue-list %}” class=”sel”>View Issues</a></li> <li><a href=”/admin/”>Admin Site</a></li> </ul> </div> <div id=”bd”> {% block content %} {% endblock %} </div> </body> </html> {{ variablename }} represents a Django variable.
+parse_and_bind(‘tab: complete’) This will make Python complete partially typed function, method and variable names when you press the Tab key.
+ Example:  dateobj = DateTime(string)  You can load predefined modules or commands at the startup of any Python script by using the environment variable $PYTHONSTARTUP.
+ You can set environment variable $PYTHONSTARTUP to a file which contains the instructions load necessary modules or commands .
+ Reading environment variables You can use the module ‘os’ to gather operatingsystem-specific information: Example:  >>> import os >>> os.
+ The following code gives you a mapping object where you can interact with the environment variables active right now:  import os os.
+getcwd() You can then get a list of the files in this directory with  You can get a list of the available environment variables with the function “os.
+keys()”, and then access individual variables with “os.
+ These environment variables are used when you spawn a subprocess, as well.
+PIPE) The variable “cmd_output” is a CompletedProcess object that contains the return code and a string holding the stdout output.
+ Under the debugger, you can set breakpoints and step through each line of code individually  IPYTHON CONSOLE The console window lets you interact directly with the underlying interpreter that will be used when you try and run your code  78 The Python Book  The variable explorer pane lets you access all of the data structures within the current Python interpreter.
+ The one weird part of sympy is that you need to use the “symbols()” function to tell sympy  Above Jupyter Notebook is a web application that is used for creating and sharing documents that contain live code and equations  what variables are valid to be considered in your equations.
+ You can then start doing manipulations using these registered variables.
+ If you want to select a given element from an array, you can use the following notation:  06  Writing to files  Writing variables to a file is largely similar to reading a file.
+ If you have an array variable named aa1, you can easily save its contents into a file called aa1.
+txt file and assigning it to a new array variable can be done as follows:  07  Common functions  08  Working with matrices  NumPy supports many numerical and statistical functions.
+plot(x,y) The variable that holds the polynomial is myPoly.
+ The other important variable is y, which calculates and holds the values of f(x) for each x value.
+ When reading data from external files, you can save their data columns into separate variables using the following way:  Process and transform a PNG image using SciPy 11  Using SciPy for image processing  In [10]: aa1,aa2 = np.
+txt", usecols=(0,1), unpack=True) The aforementioned command saves column 1 into variable aa1 and column 2 into variable aa2.
+txt", usecols=(0,1), unpack=True) The aforementioned command saves column 1 into variable aa1 and column 2 into variable aa2.
+ The “unpack=True” allows the data to be assigned to two different variables.
+ You may have noticed that when we created a new instance of the ClientListener class in the server’s main loop, we passed through the server’s self variable.
+ os module environ: environment represents the environment variables in a string object.
+environ[‘HOME’] ‘/Users/kunaldeo’ putenv(varname,value) : Adds or sets an environment variable with the given variable name and value.
+environ[‘HOME’] ‘/Users/kunaldeo’ putenv(varname,value) : Adds or sets an environment variable with the given variable name and value.
+ %edit will open the given Python script in the editor defined by the $EDITOR environment variable.
+ We’ll see examples of creating properties shortly, and you should do the same if you want to use your variables with Kivy’s event or binding functionality.
+ The first thing we're going to do is import the libraries we need for our authentication flow, create the endpoints for our server and assign some of the variables needed to run our Flask server.
+ (Fig 01) You may have noticed the account_sid and auth_token variable we’ve set after the import statements.
+ Before we deliver the template we need to check that our session has  its particular variables set, otherwise we’ll end up getting KeyErrors.
+ Notice the %s; this will be replaced with the value passed through in the next variable.
+ On the line after where we stored a variable in our session, we make a call to sendVerificationCode (VERIFICATION CODE, USER PHONE NUMBER) and pass through the code we want to send to our user and the user’s phone number.
+cursor()  Using the client variable we used to instantiate the Twilio REST module, we can access the messages class and execute the create method.
+ly/ 11k5f2x  import pygame, random BLACK = (0, 0, 0) BLUE = (0, 0, 255) WHITE = (255, 255, 255) RED = (255, 0, 0) ALIEN_SIZE = (30, 40) ALIEN_SPACER = 20 BARRIER_ROW = 10 BARRIER_COLUMN = 4 BULLET_SIZE = (5, 10) MISSILE_SIZE = (5, 5) BLOCK_SIZE = (10, 10) RES = (800, 600)  Clean clode Having all the most regularly used global variables clearly labelled here makes our code later on easier to read.
+  05  Global variables & tuples  Once we’ve imported the modules we need for the project, there’s quite a long list of variables in block capitals.
+  05  Global variables & tuples  Once we’ve imported the modules we need for the project, there’s quite a long list of variables in block capitals.
+ The capitals denote that these variables are constants (or global variables).
+ The capitals denote that these variables are constants (or global variables).
+  07  Classes – part 2  In Pivader’s classes, besides creating the required attributes – these are simply variables in classes – for the object (be it a player, an alien, some ammo or a block), you’ll also notice all the classes have an update() method apart from the Block class (a method is a function within a class).
+py script and is the key to unlocking exactly what variables and functions you need for your game.
+Group() variable.
+Group() variable to change self.
+ Essentially it states that if the animate_right flag is True and if the current animation position is different to what we want, we incrementally increase the ani_pos variable and set the player’s image accordingly.
+alien_explode flags are True before we increment the variables that change the image displayed.
+ As the sprite sheet is vertical, the variables alien_explode_pos and explosion_image are set to a different part of subsurface than before.
+  The first screen is handled differently, and acts to get every element up on the interface before we continue – it makes the code take a little less time to process as we  Add variables and assets  We add a mixture of information we need to run the novel.
+  The code here is very expandable, allowing you to add decisions that take you to different scenes  15 14  Add variables and assets  Similarly to the way that our original startup code works, our next if statement and iteration checks to see what is different on the next line, and if it moves to a different scene function.
+ Simply add:  WHITE = 200,200,200 ball = Rect((W/2, H/2), (30, 30)) … to the initial variable assignments, and:  screen.
+ With its defining variables in terms of screen width, it’s good sustainable code, which will be easy to amend for different screen sizes – see github.
+ You could try using a global variable and writing the score to the terminal with print(), or instead use screen.
+ The results are then mapped to values using Python’s dict method and saved as the posts variable.
+ To render a template we then call render_ template() and pass in the file name and the variable to display as the second argument.
+ Multiple variables can be passed through as a comma-separated list.
+ We can add specific values such as post count and a custom message if you wish, as well as the actual posts variable, formatted as JSON.
+  05  Template variables  We can choose to send variables to our template with render_template(‘index.
+  05  Template variables  We can choose to send variables to our template with render_template(‘index.
+htm’, variableOne=value, variableTwo=Value) but in this instance we don’t need to as each template has access to the request and session variables.
+htm’, variableOne=value, variableTwo=Value) but in this instance we don’t need to as each template has access to the request and session variables.
+htm’, variableOne=value, variableTwo=Value) but in this instance we don’t need to as each template has access to the request and session variables.
+ The string inside the <variable name> determines the name of the variable.
+ The string inside the <variable name> determines the name of the variable.
+ If you want the variable passed to the function to have a specific type, you can include a converter with the variable name.
+ If you want the variable passed to the function to have a specific type, you can include a converter with the variable name.
+register(Post, Admin) In this case ‘list_display’ is a fixed variable name.
+ We convert the number to decimal to make sure that we don’t lose any decimal numbers during arithmetic  The stopping condition for a while loop has to be satisfied at some point in the code; otherwise the loop will never end!  The print function can only accept string data types, so we need to convert any variables with a number data type to a string before we can print them to the screen  Resources A Raspberry Pi with all necessary peripherals An SD card containing the latest Debian image for the Raspberry Pi http://www.
+  When using the addition operator with strings, they are joined together  A variable is data that is stored in memory and can be accessed via a name.
+ Our program is going to start by asking for your first name, store that in a variable and then print out a welcome message.
+ We’re going to add a comment that explains this and create a variable called firstName.
+ We want the firstName variable to hold the value returned by a function called raw_input, that will ask the user for input.
+ Note how firstName doesn’t need to be enclosed by quotation marks because it is the name of a variable.
+ We’ve created three new variables called numberHalved, numberDoubled and numberSquared.
+ Notice that we don’t need to specify that they should be decimal because Python gives a type to its variables from the type of their initial value.
+ The number variable is a decimal type, so all values returned from performing arithmetic on that number will also be of a decimal type.
+ In this case, we will create a variable called yesOrNo and the while loop will run while yesOrNo is false.
+ The yesOrNo variable will be a Boolean type that can be either True or False.
+ The variable will be initialised with a value of False, or the while loop will not run.
+ We create a variable called ‘result’, which holds the result of the question, do you want to continue? We then check this result is valid with an if statement.
+ The count variable allows us to know exactly how many times we have been through the while loop.
+ On each run, the while loop increments the number variable and then prints what is being added to the original number, followed by the result.
+  The count variable lets us know exactly how many times we have been through the while loop  16  Finishing off  17  Admire your work  The final step is to print that the program is exiting.
+ Create a new variable in your program called message.
+

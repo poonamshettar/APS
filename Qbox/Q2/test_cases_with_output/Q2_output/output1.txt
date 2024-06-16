@@ -1,0 +1,202 @@
+ Multi-Level Training and Testing of CNN Models in  Diagnosing Multi-Center COVID-19 and Pneumonia  X-ray Images  MohamedTalaat 1, Xiuhua Si 2 and Jinxiang Xi 1,*  1  2  *  Department of Biomedical Engineering, University of Massachusetts, Lowell, MA 01854, USA;  mohamed_talaat@student.
+: +1-978-934-3259  Featured Application: Despite their reported high accuracy, a significant limitation of current  AI-assisted COVID-19 diagnostic models is that they are often trained on datasets sourced from  specific clinics or possessing a limited number of training images.
+  Through multi-level testing, we assessed the models’ capacities for verification, interpolation,  and extrapolation in the context of diagnosing COVID-19 and pneumonia using multi-center X ray images.
+  Multi-Level Training and Testing of  CNNModelsinDiagnosing  Multi-Center COVID-19 and  Pneumonia X-ray Images.
+  Abstract: This study aimed to address three questions in AI-assisted COVID-19 diagnostic systems:  (1) How does a CNNmodeltrained on one dataset perform on test datasets from disparate medical  centers? (2) What accuracy gains can be achieved by enriching the training dataset with new images?  (3) How can learned features elucidate classification results, and how do they vary among different  models? To achieve these aims, four CNN models—AlexNet, ResNet-50, MobileNet, and VGG 19—were trained in five rounds by incrementally adding new images to a baseline training set  comprising 11,538 chest X-ray images.
+ Heatmaps and intermediate activation features  showed visual correlations to COVID-19 and pneumonia X-ray manifestations but were insufficient  to explicitly explain the classification.
+ 2023, 13, 10270  2 of 21  Keywords: convolutional neural network (CNN); X-ray; COVID-19; pneumonia; AI-assisted lung  diagnostic system; multi-round training  1.
+ Introduction  Over the past few years, there has been a surge in studies exploring deep learning  techniques to diagnose COVID-19 and pneumonia.
+ Systematic reviews of AI-enabled  COVID-19detection can be foundin[1–3] in 2021, [4–10] in 2022, and [11–13] in 2023.
+ Because COVID 19 medical images were still limited in 2021, prior studies often focused on demonstrating  the feasibility of deep learning models in distinguishing COVID-19 cases from normal  subjects or patients with other respiratory diseases, such as pneumonia [14–16].
+  With the increasing availability of COVID-19 X-rays and CT scans since 2021, research  has pivoted to comparing various machine learning models and developing new models  tailored for COVID-19 detection.
+  With the increasing availability of COVID-19 X-rays and CT scans since 2021, research  has pivoted to comparing various machine learning models and developing new models  tailored for COVID-19 detection.
+ [30] considered 20 CNN models  for COVID-19 detection, including EfficientNet-B5, DenseNet169, InceptionV3, ResNet-50,  and VGG16, using 4173 CT images, and demonstrated that EfficientNet-B5 and ResNet-50  were persistently superior in accuracy and sensitivity, followed by DenseNet, Efficient Net, and Xception, while VGG-19 remained the lowest across models.
+ [33] achieved a  98% accuracy of COVID-19 prediction using 243 X-ray images, which outperformed In ception V3, VGG16, ResNet-50, DenseNet121, and MobileNet when tested individually.
+ However, only 263 original X-ray images (including 56 normal,  49 COVID-19, and 128 pneumonia) were used, which were increased to 3325 images for  each category through augmentation techniques like flipping, rotation, and shifting.
+ COVID-19) and 98.
+82% for multi-class classification (normal,  COVID-19, pneumonia).
+  In summary, researchers have achieved accuracy levels exceeding 95% for COVID-19  detection through the selection and refinement of appropriate CNN models.
+ It is also noted that even though the COVID-19  datasets have become more available, most have not been validated and can be subject  to mislabeling, noise, incompleteness, corruption, or low quality [46–49].
+  In this scenario, will the high accuracy of trained models be maintained when tested on  larger data or images from other clinics? If not, how much lower accuracy will be expected  and/or tolerated? Will adding new images to the original training dataset always improve  the model’s performance, and what level of improvement can be expected via re-training  the model with extended data? To achieve a desirable classification accuracy, how many  newimages should be added to the original training dataset?  The objective of this study was to evaluate the performance of CNN models in diag nosing COVID-19 and pneumonia in the lungs based on X-ray images from different data  sources, as well as to assess the performance variation from multi-level training.
+ COVID-19 and Pneumonia Datasets from Multiple Sources  Chest X-ray images were selected from three sources, with each source encompassing  the categories of normal, COVID-19, and pneumonia.
+ COVID-19 and Pneumonia Datasets from Multiple Sources  Chest X-ray images were selected from three sources, with each source encompassing  the categories of normal, COVID-19, and pneumonia.
+ The first dataset [50–52] contains  10,192 normal cases, 3616 COVID-19 positive cases, and 1345 viral pneumonia images.
+ Among the  11,538 training images, 7791 are normal, 2712 are COVID-19, and 1030 are viral pneumonia,  constituting a disproportionate distribution of 68%, 24%, and 9%, respectively.
+ Likewise,  among the 3035 testing images, 2032 are normal, 742 are COVID-19, and 261 are viral  pneumonia.
+ Three sample images typical of normal, COVID-19, and viral pneumonia cases  are also shown below.
+ Dataset structure: (a) datasets for multi-level testing (four levels) with three categories (nor mal, COVID-19, and pneumonia); (b) multi-round training (five rounds); and (c) model performance  matrices.
+ Dataset structure: (a) datasets for multi-level testing (four levels) with three categories  (normal, COVID-19, and pneumonia); (b) multi-round training (five rounds); and (c) model perfor mance matrices.
+ Like Dataset 1, stratified random sam pling was implemented to set apart 20% (1288) as the level 2 test images, which comprised  855, 317, and 116 for normal, COVID-19, and pneumonia, respectively (Figure 1a).
+ Like Dataset 1, stratified random sam pling was implemented to set apart 20% (1288) as the level 2 test images, which comprised  855, 317, and 116 for normal, COVID-19, and pneumonia, respectively (Figure 1a).
+ It contained 104  normal, 107 COVID-19, and 36 pneumonia cases.
+ It contained 104 normal,  107 COVID-19, and 36 pneumonia cases.
+ It comprised 234 normal,  105 COVID-19, and 390 pneumonia cases (right panel, Figure 1a).
+ It comprised 234  normal, 105 COVID-19, and 390 pneumonia cases (right panel, Figure 1a).
+ The purpose of this study was to develop a CNN-based automated diagnostic  system with high performance for COVID-19 and pneumonia patients based on chest X-ray  images.
+, COVID-19 images, but the model has never seen  them before).
+ Even  though the X-ray images acquired at any medical center share inherent similarities among  COVID-19 patients, differences among COVID-19 images can exist across medical centers,  and the performance of the pre-trained model can be affected by such differences.
+ Even  though the X-ray images acquired at any medical center share inherent similarities among  COVID-19 patients, differences among COVID-19 images can exist across medical centers,  and the performance of the pre-trained model can be affected by such differences.
+ In each test, a three-class classification (normal, COVID-19, and pneumonia) was  performed.
+ These procedures will be tested on four models  (AlexNet, ResNet-50, MobileNet, and VGG-19) for three-class classifications (normal, COVID-19,  and pneumonia).
+Round1performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and  VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for  three-classclassifications(normal,COVID-19,pneumonia).
+Round2performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and  VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for  three-classclassifications(normal,COVID-19,pneumonia).
+Round3performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and  VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for  three-classclassifications(normal,COVID-19,pneumonia).
+Round4performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and  VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for  three-classclassifications(normal,COVID-19,pneumonia).
+Round5performancecomparisonamongmodels(AlexNet,ResNet-50,MobileNet,and  VGG-19)thatweretrainedonBaseandtestedonsampleswithvaryingsimilarities(Level1–4)for  three-classclassifications(normal,COVID-19,pneumonia).
+, normal,  COVID-19, and pneumonia), the misclassification rate at Level 4 by ResNet-50 was further  broken down into individual groups in Round 1 and Round 5, as shown in Figure 7a.
+0% for COVID-19, and 94.
+8%) of normal cases included  COVID-19 (Figure 7a).
+, nor mal, COVID-19, and pneumonia), the misclassification rate at Level 4 by ResNet-50 was  further broken down into individual groups in Round 1 and Round 5, as shown in Figure  7a.
+0% for COVID-19, and 94.
+1% of cases inaccurately predicted as COVID-19 (brown color) and 20.
+7% misclassification rate  of COVID-19 all came from their incorrect prediction as normal, while a 5.
+3% as COVID-19 (Figure 7a).
+1% of cases inaccurately predicted as COVID-19 (brown color) and 20.
+7% misclassification rate of COVID-19  all came from their incorrect prediction as normal, while a 5.
+1% of cases inaccurately predicted as COVID-19 (brown color) and 20.
+7% misclassification rate  of COVID-19 all came from their incorrect prediction as normal, while a 5.
+3% as COVID-19 (Figure 7a).
+  In Round 5, the misclassifications of normal as COVID-19 and pneumonia were  greatly reduced, improving the model’s specificity (right vs.
+ A sim ilarly significant reduction was also observed in the misclassification of COVID-19 as nor mal, thus improving the model’s sensitivity.
+ However, the misclassification of COVID-19  as pneumonia increased (i.
+  InRound5,themisclassificationsofnormalasCOVID-19andpneumoniaweregreatly  reduced,improvingthemodel’sspecificity(rightvs.
+Asimilarly  significantreductionwasalsoobservedinthemisclassificationofCOVID-19asnormal,  thusimprovingthemodel’ssensitivity.
+However, themisclassificationofCOVID-19as  pneumoniaincreased(i.
+ Althoughthere  werenoteworthydecreasesinmisclassification,thescaleofthesereductionswasevidently  lesssignificantcomparedtoResNet-50,especiallyinthemispredictionsfromnormalto  pneumoniaandfromCOVID-19tonormal.
+  Interestingly, themisclassificationratebetweenCOVID-19andpneumoniaisvery  low,withthehighestrateof1.
+9%forResNet-50(COVID-19-to-pneumoniainRound5)and  1.
+8%forVGG-19(pneumonia-to-COVID-19inRound1),asshowninFigure7a,b.
+Figure8ashowstheheatmapsin  termsofocclusionsensitivityinthesampleimagesofnormal,COVID-19,andpneumonia  inRound1.
+ForCOVID-19(secondrow),scatteredzonesofintermediate  sensitivities(opacities)werepredictedwithinthelungs.
+ For COVID-19 (second row), scattered zones of  intermediate sensitivities (opacities) were predicted within the lungs.
+ Occlusion sensitivity map for the sample images of normal, COVID-19, and pneumonia at  (a) Round 1 and (b) Round 5.
+ After four  more rounds of training by exposing them to an incrementally enriched dataset, the  heatmaps in Round 5 appeared more indicative and intuitive than in Round 1 with respect  to the clinical manifestations, which exhibited a clear lung in the normal case, dispersed  opacities and occasional hotspots in COVID-19, and a large region of hotspots in the lower  lobes in pneumonia.
+Occlusionsensitivitymapforthesampleimagesofnormal,COVID-19,andpneumoniaat  (a)Round1and(b)Round5.
+Afterfourmore  roundsoftrainingbyexposingthemtoanincrementallyenricheddataset,theheatmaps  inRound5appearedmoreindicativeandintuitivethaninRound1withrespecttothe  clinicalmanifestations,whichexhibitedaclearlunginthenormalcase,dispersedopacities  andoccasionalhotspotsinCOVID-19,andalargeregionofhotspotsinthelowerlobes  inpneumonia.
+  ConsideringtheCOVID-19image,hotspotsofGrad-CAMwereobservedmainlyinthe  middleandupperlungs.
+ Considering the COVID-19 image, hotspots of Grad-CAM  were observed mainly in the middle and upper lungs.
+ Variation of the Grad-CAM map with multi-round training of normal, COVID-19, and  pneumonia images predicted by ResNet-50 in (a) Round 1, (b) Round 2, (c) Round 3, (d) Round 4,  Figure 9.
+ Variation of the Grad-CAM map with multi-round training of normal, COVID-19, and  pneumonia images predicted by ResNet-50 in (a) Round 1, (b) Round 2, (c) Round 3, (d) Round 4,  and (e) Round 5.
+ Thus, these four models are all good candidates for developing  AI-assisted COVID-19 diagnostic systems, as also suggested by many previous studies.
+ Thus, these four models are all good candidates for developing  AI-assisted COVID-19 diagnostic systems, as also suggested by many previous studies.
+ Dataset Effects  In this study, three datasets of X-ray images for normal, COVID-19, and pneumonia  were utilized.
+ Even though data argumentation techniques have  been useful when the COVID-19 images were limited, training unmodified images is  recommended when COVID-19 X-rays become more available.
+ Even though data argumentation techniques have  been useful when the COVID-19 images were limited, training unmodified images is  recommended when COVID-19 X-rays become more available.
+ Thus,  standardization and validation of image databases and repositories, which are lacking in  most public COVID-19 X-ray datasets, are needed to avoid future complications.
+ The baseline training images (11,538)  include 7791 for normal, 2717 for COVID-19, and 1030 for pneumonia.
+ COVID-19 and normal vs.
+ By contrast, the classification for COVID-19-pneumonia is much rarer.
+ It is also noted that COVID-19 has been  proven to be highly mutational, and existing datasets cannot fully account for the evolving  variants.
+ This will increase the likelihood for a future COVID-19 patient to receive a false  negative diagnosis, which makes multi-round training imperative to ensure the accuracy  of AI-assisted COVID-19 diagnostic systems.
+ This will increase the likelihood for a future COVID-19 patient to receive a false  negative diagnosis, which makes multi-round training imperative to ensure the accuracy  of AI-assisted COVID-19 diagnostic systems.
+ COVID-19 X-ray images may show patchy areas of opacity,  which indicate fluid buildup in the lungs [58,59].
+ Additionally, COVID-19 may cause a  condition called “ground-glass opacity”, which appears as a hazy, cloud-like pattern.
+ Conclusions  Despite reported high accuracies, many previous CNN-based COVID-19 diagnostic  models relied on clinic-specific or limited datasets and were rarely tested with external  images.
+ Artificial intelligence and  COVID-19 using chest CT scan and chest X-ray images: Machine learning and deep learning approaches for diagnosis and  treatment.
+ Ddiagnosis of COVID-19 using machine learning and deep learning: A review.
+ A review on deep learning techniques for the diagnosis of novel coronavirus  (COVID-19).
+ Detection of COVID-19 using deep learning techniques and cost effectiveness  evaluation: A survey.
+ Study of different deep learning methods for  coronavirus (COVID-19) pandemic: Taxonomy, survey and insights.
+ Ccomprehensive survey of machine learning systems for  COVID-19 detection.
+ Review on COVID-19 diagnosis models based on machine learning and deep learning  approaches.
+ Artificial intelligence and deep  learning assisted rapid diagnosis of COVID-19 from chest radiographical images: A survey.
+ COVID-19 detection: A systematic review of  machine and deep learning-based approaches utilizing chest X-rays and CT scans.
+ COVID-19  detection on chest X-ray and CT scan: A review of the top-100 most cited papers.
+ A survey of deep learning techniques for the analysis of  COVID-19 and their usability for detecting Omicron.
+ An overview of deep learning techniques for COVID-19 detection: Methods, challenges, and future works.
+ Reviewing methods of deep learning for diagnosing COVID-19, its variants and synergistic medicine combina tions.
+ Eexploring the potential of artificial intelligence and machine learning to com bat COVID-19 and existing opportunities for LMIC: A scoping review.
+ A novel deep learning-based quantification  of serial chest computed tomography in Coronavirus Disease 2019 (COVID-19).
+ Detection and analysis of COVID-19 in medical images  using deep learning techniques.
+ COVID-19 detection and disease progression visualization: Deep learning on chest X-rays for classification  and coarse localization.
+ Pneumonia classification using deep learning from chest X-ray  images during COVID-19.
+ Deep learning based detection and analysis of COVID-19 on chest X-ray images.
+ A novel multi-scale based deep convolutional neural network for detecting  COVID-19 from X-rays.
+ A comparative study of different feature extraction techniques for identifying COVID-19 patients using chest  X-rays images.
+ Deep learning-based COVID-19 detection using CT and X-ray images: Current  analytics and comparisons.
+ An ensemble of global and local-attention based convolutional  neural networks for COVID-19 diagnosis on chest X-ray images.
+ Effectiveness of COVID-19 diagnosis and management tools: A review.
+ Detection of COVID-19 from CT and  chest X-ray images using deep learning models.
+ Weakly labeled data augmentation for deep learning: A Study on COVID-19 detection in chest X-rays.
+  Eensemble deep learning derived from transfer learning for classification of COVID-19 patients on hybrid deep-learning-based  lung segmentation: A data augmentation and balancing framework.
+ Deep transfer learning for COVID-19 prediction: Case study for limited data problems.
+ Efficient and visualizable convolutional neural networks for COVID-19  classification using Chest CT.
+ COVID-19 detection in CT and CXR images  using deep learning models.
+ COVID-19 pneumonia  diagnosis using a simple 2D deep learning framework with a single chest CT image: Model development and validation.
+ COVID-19 prediction based on hybrid Inception V3 with  VGG16using chest X-ray images.
+ COVIDX-LwNet: A lightweight network ensemble model for the detection of COVID-19 based  on chest X-ray images.
+ Cascaded deep learning classifiers for computer-aided diagnosis of COVID-19 and  pneumonia diseases in X-ray scans.
+ LiteCovidNet: A lightweight deep  neural network model for detection of COVID-19 using X-ray images.
+ A survey on deep learning models for detection of COVID-19.
+ Challenges, opportunities, and advances related to COVID-19 classification based on deep learning.
+ Deep learning and medical image analysis for COVID-19 diagnosis and prediction.
+ A COVID-19 pandemic artificial intelligence-based  system with deep learning forecasting and automatic statistical data acquisition: Development and implementation study.
+ Unraveling complex  relationships between COVID-19 risk factors using machine learning based models for predicting mortality of hospitalized  patients and identification of high-risk group: A large retrospective study.
+ Applications of machine learning for COVID-19 misinformation: A  systematic review.
+ COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks  Database.
+ COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks  Database.
+ Can AI help in screening viral and COVID-19 pneumonia? IEEE Access 2020, 8, 132665–132676.
+ Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-ray images.
+ Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal  Patients.
+ Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal  Patients.
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ COVID-19 X-ray images may show patchy areas of opacity,  which indicate fluid buildup in the lungs [58,59].
+ Additionally, COVID-19 may cause a  condition called “ground-glass opacity”, which appears as a hazy, cloud-like pattern.
+ Conclusions  Despite reported high accuracies, many previous CNN-based COVID-19 diagnostic  models relied on clinic-specific or limited datasets and were rarely tested with external  images.
+ Artificial intelligence and  COVID-19 using chest CT scan and chest X-ray images: Machine learning and deep learning approaches for diagnosis and  treatment.
+ Ddiagnosis of COVID-19 using machine learning and deep learning: A review.
+ A review on deep learning techniques for the diagnosis of novel coronavirus  (COVID-19).
+ Detection of COVID-19 using deep learning techniques and cost effectiveness  evaluation: A survey.
+ Study of different deep learning methods for  coronavirus (COVID-19) pandemic: Taxonomy, survey and insights.
+ Ccomprehensive survey of machine learning systems for  COVID-19 detection.
+ Review on COVID-19 diagnosis models based on machine learning and deep learning  approaches.
+ Artificial intelligence and deep  learning assisted rapid diagnosis of COVID-19 from chest radiographical images: A survey.
+ COVID-19 detection: A systematic review of  machine and deep learning-based approaches utilizing chest X-rays and CT scans.
+ COVID-19  detection on chest X-ray and CT scan: A review of the top-100 most cited papers.
+ A survey of deep learning techniques for the analysis of  COVID-19 and their usability for detecting Omicron.
+ An overview of deep learning techniques for COVID-19 detection: Methods, challenges, and future works.
+ Reviewing methods of deep learning for diagnosing COVID-19, its variants and synergistic medicine combina tions.
+ Eexploring the potential of artificial intelligence and machine learning to com bat COVID-19 and existing opportunities for LMIC: A scoping review.
+ A novel deep learning-based quantification  of serial chest computed tomography in Coronavirus Disease 2019 (COVID-19).
+ Detection and analysis of COVID-19 in medical images  using deep learning techniques.
+ COVID-19 detection and disease progression visualization: Deep learning on chest X-rays for classification  and coarse localization.
+ Pneumonia classification using deep learning from chest X-ray  images during COVID-19.
+ Deep learning based detection and analysis of COVID-19 on chest X-ray images.
+ A novel multi-scale based deep convolutional neural network for detecting  COVID-19 from X-rays.
+ A comparative study of different feature extraction techniques for identifying COVID-19 patients using chest  X-rays images.
+ Deep learning-based COVID-19 detection using CT and X-ray images: Current  analytics and comparisons.
+ An ensemble of global and local-attention based convolutional  neural networks for COVID-19 diagnosis on chest X-ray images.
+ Effectiveness of COVID-19 diagnosis and management tools: A review.
+ Detection of COVID-19 from CT and  chest X-ray images using deep learning models.
+ Weakly labeled data augmentation for deep learning: A Study on COVID-19 detection in chest X-rays.
+  Eensemble deep learning derived from transfer learning for classification of COVID-19 patients on hybrid deep-learning-based  lung segmentation: A data augmentation and balancing framework.
+ Deep transfer learning for COVID-19 prediction: Case study for limited data problems.
+ Efficient and visualizable convolutional neural networks for COVID-19  classification using Chest CT.
+ COVID-19 detection in CT and CXR images  using deep learning models.
+ COVID-19 pneumonia  diagnosis using a simple 2D deep learning framework with a single chest CT image: Model development and validation.
+ COVID-19 prediction based on hybrid Inception V3 with  VGG16using chest X-ray images.
+ COVIDX-LwNet: A lightweight network ensemble model for the detection of COVID-19 based  on chest X-ray images.
+ Cascaded deep learning classifiers for computer-aided diagnosis of COVID-19 and  pneumonia diseases in X-ray scans.
+ LiteCovidNet: A lightweight deep  neural network model for detection of COVID-19 using X-ray images.
+ A survey on deep learning models for detection of COVID-19.
+ Challenges, opportunities, and advances related to COVID-19 classification based on deep learning.
+ Deep learning and medical image analysis for COVID-19 diagnosis and prediction.
+ A COVID-19 pandemic artificial intelligence-based  system with deep learning forecasting and automatic statistical data acquisition: Development and implementation study.
+ Unraveling complex  relationships between COVID-19 risk factors using machine learning based models for predicting mortality of hospitalized  patients and identification of high-risk group: A large retrospective study.
+ Applications of machine learning for COVID-19 misinformation: A  systematic review.
+ COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks  Database.
+ COVID-19 Radiography Database: COVID-19 Chest X-ray Images and Lung Masks  Database.
+ Can AI help in screening viral and COVID-19 pneumonia? IEEE Access 2020, 8, 132665–132676.
+ Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-ray images.
+ Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal  Patients.
+ Chest X-ray (COVID-19 & Pneumonia): Dataset Contains Chest X-ray Images of COVID-19, Pneumonia and Normal  Patients.
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+ Chest X-ray (Pneumonia, COVID-19,Tuberculosis).
+
